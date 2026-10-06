@@ -1,0 +1,376 @@
+{
+  "metadata": {
+    "id": "pctb-bio-09",
+    "code": "PCTB-BIO-09",
+    "subjectCode": "BIO-09",
+    "subjectName": "Biology",
+    "classLevel": 9,
+    "title": "Biology Class 9 (Punjab Curriculum and Textbook Board)",
+    "edition": "2024-2025 Revised Edition",
+    "publisher": "Punjab Curriculum and Textbook Board, Lahore",
+    "academicSession": "2024-2025",
+    "officialSourceUrl": "https://pctb.punjab.gov.pk/system/files/Biology-9-EM.pdf",
+    "savedAt": "2026-10-06T18:58:59.942Z",
+    "version": "1.0-PCTB-VAULT"
+  },
+  "chaptersCount": 9,
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "title": "Introduction to Biology",
+      "orderIndex": 1,
+      "topics": [
+        {
+          "topicCode": "1.1",
+          "title": "Major Divisions and Branches of Biology",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "1.2",
+          "title": "Relationship of Biology to Other Sciences",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "1.3",
+          "title": "Careers in Biology",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "1.4",
+          "title": "Quran and Biology",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "1.5",
+          "title": "Levels of Biological Organization",
+          "orderIndex": 5
+        }
+      ],
+      "keyConcepts": [
+        "Branches of biology",
+        "Interdisciplinary sciences",
+        "Cellular and organ system levels"
+      ]
+    },
+    {
+      "chapterNumber": 2,
+      "title": "Solving a Biological Problem",
+      "orderIndex": 2,
+      "topics": [
+        {
+          "topicCode": "2.1",
+          "title": "Biological Method",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "2.2",
+          "title": "Study of Malaria as an Example of Biological Method",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "2.3",
+          "title": "Data Organization and Data Analysis",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "2.4",
+          "title": "Theory, Law and Principle",
+          "orderIndex": 4
+        }
+      ],
+      "keyConcepts": [
+        "Hypothesis formulation",
+        "Deductions",
+        "Ronald Ross and Plasmodium discovery"
+      ]
+    },
+    {
+      "chapterNumber": 3,
+      "title": "Biodiversity",
+      "orderIndex": 3,
+      "topics": [
+        {
+          "topicCode": "3.1",
+          "title": "Definition and Importance of Biodiversity",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "3.2",
+          "title": "Aims and Principles of Classification",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "3.3",
+          "title": "History of Classification Systems (Two-Kingdom, Five-Kingdom)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "3.4",
+          "title": "The Five Kingdoms (Monera, Protista, Fungi, Plantae, Animalia)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "3.5",
+          "title": "Binomial Nomenclature",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "3.6",
+          "title": "Conservation of Biodiversity and Endangered Species in Pakistan",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Five kingdom system",
+        "Carolus Linnaeus naming rules",
+        "Deforestation and species loss"
+      ]
+    },
+    {
+      "chapterNumber": 4,
+      "title": "Cells and Tissues",
+      "orderIndex": 4,
+      "topics": [
+        {
+          "topicCode": "4.1",
+          "title": "Microscopy and Emergence of Cell Theory",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "4.2",
+          "title": "Cellular Structures and Organelles (Nucleus, Mitochondria, Ribosomes, Chloroplasts)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "4.3",
+          "title": "Prokaryotic and Eukaryotic Cells",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "4.4",
+          "title": "Relationship Between Cell Function and Cell Structure",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "4.5",
+          "title": "Passage of Molecules into and out of Cells (Diffusion, Osmosis, Active Transport)",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "4.6",
+          "title": "Animal Tissues (Epithelial, Connective, Muscle, Nervous)",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "4.7",
+          "title": "Plant Tissues (Meristematic, Permanent)",
+          "orderIndex": 7
+        }
+      ],
+      "keyConcepts": [
+        "Cell theory postulates",
+        "Organelle functions",
+        "Fluid mosaic model",
+        "Osmosis vs diffusion"
+      ]
+    },
+    {
+      "chapterNumber": 5,
+      "title": "Cell Cycle",
+      "orderIndex": 5,
+      "topics": [
+        {
+          "topicCode": "5.1",
+          "title": "Cell Cycle (Interphase: G1, S, G2)",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "5.2",
+          "title": "Mitosis (Prophase, Metaphase, Anaphase, Telophase)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "5.3",
+          "title": "Significance of Mitosis",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "5.4",
+          "title": "Meiosis (Meiosis I and Meiosis II)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "5.5",
+          "title": "Significance of Meiosis and Crossing Over",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "5.6",
+          "title": "Necrosis and Apoptosis",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Mitosis phases",
+        "Meiosis crossing over",
+        "Programmed cell death vs accidental death"
+      ]
+    },
+    {
+      "chapterNumber": 6,
+      "title": "Enzymes",
+      "orderIndex": 6,
+      "topics": [
+        {
+          "topicCode": "6.1",
+          "title": "Characteristics of Enzymes",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "6.2",
+          "title": "Mechanism of Enzyme Action (Lock and Key, Induced Fit Model)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "6.3",
+          "title": "Factors Affecting the Rate of Enzyme Action (Temperature, pH, Substrate Concentration)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "6.4",
+          "title": "Uses of Enzymes",
+          "orderIndex": 4
+        }
+      ],
+      "keyConcepts": [
+        "Activation energy lowering",
+        "Active site",
+        "Denaturation of enzymes",
+        "Induced fit model"
+      ]
+    },
+    {
+      "chapterNumber": 7,
+      "title": "Bioenergetics",
+      "orderIndex": 7,
+      "topics": [
+        {
+          "topicCode": "7.1",
+          "title": "Bioenergetics and the Role of ATP",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "7.2",
+          "title": "Photosynthesis and Role of Chlorophyll and Light",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "7.3",
+          "title": "Mechanism of Photosynthesis (Light Reactions, Dark Reactions/Calvin Cycle)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "7.4",
+          "title": "Respiration (Aerobic and Anaerobic/Fermentation)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "7.5",
+          "title": "Mechanism of Respiration (Glycolysis, Krebs Cycle, Electron Transport Chain)",
+          "orderIndex": 5
+        }
+      ],
+      "keyConcepts": [
+        "ATP cycle",
+        "Z-scheme light reactions",
+        "Calvin cycle",
+        "Aerobic vs anaerobic energy yields"
+      ]
+    },
+    {
+      "chapterNumber": 8,
+      "title": "Nutrition",
+      "orderIndex": 8,
+      "topics": [
+        {
+          "topicCode": "8.1",
+          "title": "Mineral Nutrition in Plants",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "8.2",
+          "title": "Components of Human Food (Carbohydrates, Lipids, Proteins, Vitamins, Minerals, Water, Fibre)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "8.3",
+          "title": "Balanced Diet",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "8.4",
+          "title": "Problems Related to Nutrition (Malnutrition, Protein Energy Malnutrition)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "8.5",
+          "title": "Digestion in Humans (Alimentary Canal, Stomach, Intestines, Liver, Pancreas)",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "8.6",
+          "title": "Disorders of Gut (Diarrhea, Constipation, Ulcer)",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Vitamins A, C, D functions",
+        "Peristalsis",
+        "Enzymatic digestion in stomach and small intestine"
+      ]
+    },
+    {
+      "chapterNumber": 9,
+      "title": "Transport",
+      "orderIndex": 9,
+      "topics": [
+        {
+          "topicCode": "9.1",
+          "title": "Transport in Plants (Water and Ion Uptake, Transpiration)",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "9.2",
+          "title": "Translocation of Food (Pressure-Flow Hypothesis)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "9.3",
+          "title": "Transport in Humans (Blood Components, ABO Blood Group System, Rh Factor)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "9.4",
+          "title": "Human Heart Structure and Cardiac Cycle",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "9.5",
+          "title": "Blood Vessels (Arteries, Veins, Capillaries)",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "9.6",
+          "title": "Cardiovascular Disorders (Atherosclerosis, Arteriosclerosis, Heart Attack)",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Transpiration pull",
+        "Translocation mechanism",
+        "ABO blood grouping",
+        "Double circulation in heart"
+      ]
+    }
+  ]
+}

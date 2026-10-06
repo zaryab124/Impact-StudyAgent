@@ -1,0 +1,422 @@
+{
+  "metadata": {
+    "id": "pctb-phy-09",
+    "code": "PCTB-PHY-09",
+    "subjectCode": "PHY-09",
+    "subjectName": "Physics",
+    "classLevel": 9,
+    "title": "Physics Class 9 (Punjab Curriculum and Textbook Board)",
+    "edition": "2024-2025 Revised Edition",
+    "publisher": "Punjab Curriculum and Textbook Board, Lahore",
+    "academicSession": "2024-2025",
+    "officialSourceUrl": "https://pctb.punjab.gov.pk/system/files/Physics-9-EM.pdf",
+    "savedAt": "2026-10-06T18:57:50.467Z",
+    "version": "1.0-PCTB-VAULT"
+  },
+  "chaptersCount": 9,
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "title": "Physical Quantities and Measurement",
+      "orderIndex": 1,
+      "topics": [
+        {
+          "topicCode": "1.1",
+          "title": "Introduction to Physics",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "1.2",
+          "title": "Physical Quantities (Base and Derived)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "1.3",
+          "title": "International System of Units (SI)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "1.4",
+          "title": "Prefixes and Scientific Notation",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "1.5",
+          "title": "Measuring Instruments (Vernier Calliper, Screw Gauge, Physical Balance)",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "1.6",
+          "title": "Significant Figures",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Base units",
+        "Derived quantities",
+        "Least count",
+        "Zero error",
+        "Significant figures"
+      ]
+    },
+    {
+      "chapterNumber": 2,
+      "title": "Kinematics",
+      "orderIndex": 2,
+      "topics": [
+        {
+          "topicCode": "2.1",
+          "title": "Rest and Motion",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "2.2",
+          "title": "Types of Motion (Translatory, Rotatory, Vibratory)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "2.3",
+          "title": "Scalars and Vectors",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "2.4",
+          "title": "Terms Associated with Motion (Distance, Displacement, Speed, Velocity, Acceleration)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "2.5",
+          "title": "Graphical Analysis of Motion",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "2.6",
+          "title": "Equations of Motion",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "2.7",
+          "title": "Motion of Freely Falling Bodies",
+          "orderIndex": 7
+        }
+      ],
+      "keyConcepts": [
+        "Uniform acceleration",
+        "Speed-time graph",
+        "Equations of motion",
+        "Gravitational acceleration"
+      ]
+    },
+    {
+      "chapterNumber": 3,
+      "title": "Dynamics",
+      "orderIndex": 3,
+      "topics": [
+        {
+          "topicCode": "3.1",
+          "title": "Force, Inertia and Momentum",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "3.2",
+          "title": "Newton's Laws of Motion",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "3.3",
+          "title": "Mass and Weight",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "3.4",
+          "title": "Law of Conservation of Momentum",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "3.5",
+          "title": "Friction and Rolling Friction",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "3.6",
+          "title": "Centripetal Force and Centrifugal Force",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Inertia",
+        "Newton's second law F=ma",
+        "Conservation of momentum",
+        "Centripetal acceleration"
+      ]
+    },
+    {
+      "chapterNumber": 4,
+      "title": "Turning Effect of Forces",
+      "orderIndex": 4,
+      "topics": [
+        {
+          "topicCode": "4.1",
+          "title": "Like and Unlike Parallel Forces",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "4.2",
+          "title": "Addition of Forces and Resolution of Forces",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "4.3",
+          "title": "Torque or Moment of a Force",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "4.4",
+          "title": "Principle of Moments",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "4.5",
+          "title": "Centre of Mass and Centre of Gravity",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "4.6",
+          "title": "Couple",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "4.7",
+          "title": "Equilibrium and Conditions of Equilibrium",
+          "orderIndex": 7
+        },
+        {
+          "topicCode": "4.8",
+          "title": "States of Equilibrium (Stable, Unstable, Neutral)",
+          "orderIndex": 8
+        }
+      ],
+      "keyConcepts": [
+        "Torque tau=rF",
+        "First condition of equilibrium",
+        "Second condition of equilibrium",
+        "Center of gravity"
+      ]
+    },
+    {
+      "chapterNumber": 5,
+      "title": "Gravitation",
+      "orderIndex": 5,
+      "topics": [
+        {
+          "topicCode": "5.1",
+          "title": "The Law of Gravitation",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "5.2",
+          "title": "Mass of the Earth",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "5.3",
+          "title": "Variation of g with Altitude",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "5.4",
+          "title": "Artificial Satellites and Orbital Velocity",
+          "orderIndex": 4
+        }
+      ],
+      "keyConcepts": [
+        "Newton's law of gravitation",
+        "Mass of Earth formula",
+        "Orbital velocity v0=sqrt(gR)"
+      ]
+    },
+    {
+      "chapterNumber": 6,
+      "title": "Work and Energy",
+      "orderIndex": 6,
+      "topics": [
+        {
+          "topicCode": "6.1",
+          "title": "Work",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "6.2",
+          "title": "Energy and Kinetic Energy",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "6.3",
+          "title": "Potential Energy",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "6.4",
+          "title": "Forms of Energy and Interconversion",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "6.5",
+          "title": "Major Sources of Energy",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "6.6",
+          "title": "Efficiency",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "6.7",
+          "title": "Power",
+          "orderIndex": 7
+        }
+      ],
+      "keyConcepts": [
+        "Work W=Fd cos theta",
+        "Kinetic energy Ek=1/2mv^2",
+        "Potential energy Ep=mgh",
+        "Efficiency",
+        "Power P=W/t"
+      ]
+    },
+    {
+      "chapterNumber": 7,
+      "title": "Properties of Matter",
+      "orderIndex": 7,
+      "topics": [
+        {
+          "topicCode": "7.1",
+          "title": "Kinetic Molecular Model of Matter",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "7.2",
+          "title": "Density",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "7.3",
+          "title": "Pressure and Atmospheric Pressure",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "7.4",
+          "title": "Pressure in Liquids and Pascal's Law",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "7.5",
+          "title": "Archimedes Principle and Upthrust",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "7.6",
+          "title": "Principle of Floatation",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "7.7",
+          "title": "Elasticity, Stress, Strain and Hooke's Law",
+          "orderIndex": 7
+        },
+        {
+          "topicCode": "7.8",
+          "title": "Young's Modulus",
+          "orderIndex": 8
+        }
+      ],
+      "keyConcepts": [
+        "Pascal's law",
+        "Archimedes principle",
+        "Hooke's law F=kx",
+        "Young's modulus"
+      ]
+    },
+    {
+      "chapterNumber": 8,
+      "title": "Thermal Properties of Matter",
+      "orderIndex": 8,
+      "topics": [
+        {
+          "topicCode": "8.1",
+          "title": "Temperature and Heat",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "8.2",
+          "title": "Thermometer and Temperature Scales",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "8.3",
+          "title": "Specific Heat Capacity",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "8.4",
+          "title": "Change of State and Latent Heat of Fusion",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "8.5",
+          "title": "Latent Heat of Vaporization",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "8.6",
+          "title": "Evaporation and Cooling Effect",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "8.7",
+          "title": "Thermal Expansion (Linear and Volume)",
+          "orderIndex": 7
+        }
+      ],
+      "keyConcepts": [
+        "Specific heat Q=mc Delta T",
+        "Latent heat of fusion",
+        "Latent heat of vaporization",
+        "Thermal expansion"
+      ]
+    },
+    {
+      "chapterNumber": 9,
+      "title": "Transfer of Heat",
+      "orderIndex": 9,
+      "topics": [
+        {
+          "topicCode": "9.1",
+          "title": "Conduction and Thermal Conductivity",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "9.2",
+          "title": "Convection and Convection Currents",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "9.3",
+          "title": "Radiation and Leslie's Cube",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "9.4",
+          "title": "Greenhouse Effect and Global Warming",
+          "orderIndex": 4
+        }
+      ],
+      "keyConcepts": [
+        "Thermal conductivity",
+        "Rate of flow of heat",
+        "Convection currents in nature",
+        "Radiation of heat"
+      ]
+    }
+  ]
+}

@@ -9,6 +9,8 @@ import {
   CreateTopicInput,
 } from "@/lib/validations/education";
 import { CreateSyllabusInput } from "@/lib/validations/syllabus";
+import { PUNJAB_BOARDS_REGISTRY } from "./punjab/punjab-boards-config";
+import { PCTB_OFFICIAL_CATALOG } from "./punjab/pctb-service";
 
 const DEFAULT_CHAPTERS = [
   { id: "chap-01", bookId: "book-physics-09", chapterNumber: 1, title: "Physical Quantities and Measurement", orderIndex: 1, status: "ACTIVE", topics: [] },
@@ -20,6 +22,22 @@ const DEFAULT_CHAPTERS = [
   { id: "chap-07", bookId: "book-physics-09", chapterNumber: 7, title: "Properties of Matter", orderIndex: 7, status: "ACTIVE", topics: [] },
   { id: "chap-08", bookId: "book-physics-09", chapterNumber: 8, title: "Thermal Properties of Matter", orderIndex: 8, status: "ACTIVE", topics: [] },
   { id: "chap-09", bookId: "book-physics-09", chapterNumber: 9, title: "Transfer of Heat", orderIndex: 9, status: "ACTIVE", topics: [] },
+  // PCTB Physics Chapters
+  ...PCTB_OFFICIAL_CATALOG[0].chapters.map((ch) => ({
+    id: `chap-pctb-phy-${ch.chapterNumber}`,
+    bookId: "pctb-phy-09",
+    chapterNumber: ch.chapterNumber,
+    title: ch.title,
+    orderIndex: ch.orderIndex,
+    status: "ACTIVE",
+    topics: ch.topics.map((t) => ({
+      id: `top-pctb-phy-${ch.chapterNumber}-${t.orderIndex}`,
+      title: t.title,
+      topicCode: t.topicCode,
+      orderIndex: t.orderIndex,
+      status: "ACTIVE",
+    })),
+  })),
 ];
 
 const DEFAULT_BOARDS = [
@@ -32,6 +50,15 @@ const DEFAULT_BOARDS = [
     status: "ACTIVE",
     _count: { academicYears: 1, books: 4 },
   },
+  ...PUNJAB_BOARDS_REGISTRY.map((b) => ({
+    id: b.id,
+    code: b.code,
+    name: b.name,
+    country: b.country,
+    region: b.region,
+    status: b.status,
+    _count: { academicYears: 1, books: 4 },
+  })),
 ];
 
 const DEFAULT_ACADEMIC_YEARS = [
@@ -134,6 +161,25 @@ const DEFAULT_BOOKS = [
     academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
     _count: { chapters: 8 },
   },
+  // PCTB Official Textbooks
+  ...PCTB_OFFICIAL_CATALOG.map((pctb) => ({
+    id: pctb.id,
+    title: pctb.title,
+    edition: pctb.edition,
+    publisher: pctb.publisher,
+    author: "Punjab Curriculum and Textbook Board",
+    boardId: "board-punjab-lhr",
+    academicYearId: "year-current",
+    classId: "class-9",
+    subjectId: `subj-${pctb.subjectName.toLowerCase()}`,
+    version: "2024.1",
+    status: "ACTIVE",
+    subject: { id: `subj-${pctb.subjectName.toLowerCase()}`, name: pctb.subjectName, code: pctb.subjectCode },
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
+    academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+    _count: { chapters: pctb.chaptersCount },
+  })),
 ];
 
 export class EducationService {

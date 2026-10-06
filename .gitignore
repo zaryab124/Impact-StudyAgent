@@ -4,6 +4,7 @@ node_modules/
 out/
 build/
 dist/
+*.tsbuildinfo
 
 # Logs
 npm-debug.log*
@@ -32,3 +33,4 @@ Thumbs.db
 *.bak
 uploads/
 scratch/
+storage-vault/recovery_checks/

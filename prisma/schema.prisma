@@ -292,6 +292,7 @@ model Board {
   syllabi       Syllabus[]
   samplePapers  SamplePaper[]
   paperPatterns PaperPattern[]
+  policies      BoardPolicy[]
 
   @@index([status])
 }
@@ -1125,4 +1126,30 @@ model Result {
   generatedAt        DateTime @default(now())
 
   attempt ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}
+
+// ------------------------------------------------------------------------------
+// 8. BOARD POLICIES & ASSESSMENT RULES (Punjab / PBCC Dynamic Policies)
+// ------------------------------------------------------------------------------
+
+model BoardPolicy {
+  id               String       @id @default(uuid())
+  boardId          String?
+  policyCode       String       // e.g. "PBCC-SLO-2025", "PBCC-PASSING-CRITERIA-2025"
+  title            String       // e.g. "PBCC SLO-Based Assessment & Pairing Scheme 2025"
+  category         String       // "ASSESSMENT", "PAIRING_SCHEME", "PASSING_CRITERIA", "SLO_DISTRIBUTION"
+  description      String?      @db.Text
+  effectiveSession String       @default("2024-2025") // Academic session e.g. "2024-2025", "2025-2026"
+  portalUrl        String?      // Official board/PBCC portal URL
+  parameters       Json?        // Dynamic parameters: passing marks %, SLO split, pairing rules, etc.
+  status           EntityStatus @default(ACTIVE)
+  lastSyncedAt     DateTime?    @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  board Board? @relation(fields: [boardId], references: [id], onDelete: Cascade)
+
+  @@index([boardId])
+  @@index([policyCode])
+  @@index([category])
 }

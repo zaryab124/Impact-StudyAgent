@@ -1,0 +1,359 @@
+{
+  "metadata": {
+    "id": "pctb-chm-09",
+    "code": "PCTB-CHM-09",
+    "subjectCode": "CHM-09",
+    "subjectName": "Chemistry",
+    "classLevel": 9,
+    "title": "Chemistry Class 9 (Punjab Curriculum and Textbook Board)",
+    "edition": "2024-2025 Revised Edition",
+    "publisher": "Punjab Curriculum and Textbook Board, Lahore",
+    "academicSession": "2024-2025",
+    "officialSourceUrl": "https://pctb.punjab.gov.pk/system/files/Chemistry-9-EM.pdf",
+    "savedAt": "2026-10-06T18:58:23.132Z",
+    "version": "1.0-PCTB-VAULT"
+  },
+  "chaptersCount": 8,
+  "chapters": [
+    {
+      "chapterNumber": 1,
+      "title": "Fundamentals of Chemistry",
+      "orderIndex": 1,
+      "topics": [
+        {
+          "topicCode": "1.1",
+          "title": "Branches of Chemistry",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "1.2",
+          "title": "Basic Definitions (Matter, Element, Compound, Mixture)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "1.3",
+          "title": "Atomic Number and Mass Number",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "1.4",
+          "title": "Relative Atomic Mass and Atomic Mass Unit",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "1.5",
+          "title": "Chemical Formulae and Empirical Formula",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "1.6",
+          "title": "Molecular Mass and Formula Mass",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "1.7",
+          "title": "Chemical Species (Ions, Molecular Ions, Free Radicals)",
+          "orderIndex": 7
+        },
+        {
+          "topicCode": "1.8",
+          "title": "Avogadro's Number and Mole",
+          "orderIndex": 8
+        }
+      ],
+      "keyConcepts": [
+        "Mole concept",
+        "Empirical vs molecular formula",
+        "Avogadro's number",
+        "Valency"
+      ]
+    },
+    {
+      "chapterNumber": 2,
+      "title": "Structure of Atoms",
+      "orderIndex": 2,
+      "topics": [
+        {
+          "topicCode": "2.1",
+          "title": "Theories and Experiments Related to Structure of Atom",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "2.2",
+          "title": "Rutherford's Atomic Model",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "2.3",
+          "title": "Bohr's Atomic Theory",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "2.4",
+          "title": "Electronic Configuration",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "2.5",
+          "title": "Isotopes and Uses of Isotopes",
+          "orderIndex": 5
+        }
+      ],
+      "keyConcepts": [
+        "Subatomic particles",
+        "Bohr's postulates",
+        "Electronic configuration",
+        "Radioactive isotopes"
+      ]
+    },
+    {
+      "chapterNumber": 3,
+      "title": "Periodic Table and Periodicity of Properties",
+      "orderIndex": 3,
+      "topics": [
+        {
+          "topicCode": "3.1",
+          "title": "Periodic Table (Periods and Groups)",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "3.2",
+          "title": "Periodicity of Properties",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "3.3",
+          "title": "Atomic Size and Atomic Radius",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "3.4",
+          "title": "Ionization Energy",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "3.5",
+          "title": "Electron Affinity",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "3.6",
+          "title": "Electronegativity",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Mendeleev vs Modern Periodic Law",
+        "Shielding effect",
+        "Trends in groups and periods"
+      ]
+    },
+    {
+      "chapterNumber": 4,
+      "title": "Structure of Molecules",
+      "orderIndex": 4,
+      "topics": [
+        {
+          "topicCode": "4.1",
+          "title": "Why do Atoms Form Chemical Bonds?",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "4.2",
+          "title": "Chemical Bonds and Octet Rule",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "4.3",
+          "title": "Ionic Bond",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "4.4",
+          "title": "Covalent Bond (Single, Double, Triple)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "4.5",
+          "title": "Dative Covalent or Coordinate Covalent Bond",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "4.6",
+          "title": "Metallic Bond",
+          "orderIndex": 6
+        },
+        {
+          "topicCode": "4.7",
+          "title": "Intermolecular Forces and Hydrogen Bonding",
+          "orderIndex": 7
+        }
+      ],
+      "keyConcepts": [
+        "Octet rule",
+        "Ionic vs covalent properties",
+        "Hydrogen bonding in water"
+      ]
+    },
+    {
+      "chapterNumber": 5,
+      "title": "Physical States of Matter",
+      "orderIndex": 5,
+      "topics": [
+        {
+          "topicCode": "5.1",
+          "title": "Gaseous State and Typical Properties (Diffusion, Effusion, Pressure)",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "5.2",
+          "title": "Gas Laws (Boyle's Law and Charles's Law)",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "5.3",
+          "title": "Liquid State (Evaporation, Vapour Pressure, Boiling Point)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "5.4",
+          "title": "Solid State (Amorphous and Crystalline Solids)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "5.5",
+          "title": "Allotropy",
+          "orderIndex": 5
+        }
+      ],
+      "keyConcepts": [
+        "Boyle's Law P1V1=P2V2",
+        "Charles's Law V1/T1=V2/T2",
+        "Vapour pressure",
+        "Allotropes of carbon"
+      ]
+    },
+    {
+      "chapterNumber": 6,
+      "title": "Solutions",
+      "orderIndex": 6,
+      "topics": [
+        {
+          "topicCode": "6.1",
+          "title": "Solution, Aqueous Solution, Solute and Solvent",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "6.2",
+          "title": "Saturated, Unsaturated and Supersaturated Solutions",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "6.3",
+          "title": "Types of Solutions",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "6.4",
+          "title": "Concentration Units (Percentage, Molarity)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "6.5",
+          "title": "Solubility and Factors Affecting Solubility",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "6.6",
+          "title": "Comparison of Solution, Suspension and Colloid",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Molarity M = moles/volume",
+        "Like dissolves like principle",
+        "Tyndall effect"
+      ]
+    },
+    {
+      "chapterNumber": 7,
+      "title": "Electrochemistry",
+      "orderIndex": 7,
+      "topics": [
+        {
+          "topicCode": "7.1",
+          "title": "Oxidation and Reduction Reactions",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "7.2",
+          "title": "Oxidation State and Rules for Assigning Oxidation States",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "7.3",
+          "title": "Oxidizing and Reducing Agents",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "7.4",
+          "title": "Electrochemical Cells (Electrolytic and Galvanic)",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "7.5",
+          "title": "Manufacture of Sodium from Down's Cell",
+          "orderIndex": 5
+        },
+        {
+          "topicCode": "7.6",
+          "title": "Corrosion and its Prevention (Rusting of Iron, Electroplating)",
+          "orderIndex": 6
+        }
+      ],
+      "keyConcepts": [
+        "Redox reactions",
+        "Oxidation numbers",
+        "Daniell cell",
+        "Cathodic protection and galvanizing"
+      ]
+    },
+    {
+      "chapterNumber": 8,
+      "title": "Chemical Reactivity",
+      "orderIndex": 8,
+      "topics": [
+        {
+          "topicCode": "8.1",
+          "title": "Metals and Electropositive Character",
+          "orderIndex": 1
+        },
+        {
+          "topicCode": "8.2",
+          "title": "Comparison of Reactivity of Alkali and Alkaline Earth Metals",
+          "orderIndex": 2
+        },
+        {
+          "topicCode": "8.3",
+          "title": "Inertness of Noble Metals (Gold, Silver, Platinum)",
+          "orderIndex": 3
+        },
+        {
+          "topicCode": "8.4",
+          "title": "Non-Metals and Electronegative Character",
+          "orderIndex": 4
+        },
+        {
+          "topicCode": "8.5",
+          "title": "Comparison of Reactivity of Halogens",
+          "orderIndex": 5
+        }
+      ],
+      "keyConcepts": [
+        "Electropositivity trend",
+        "Alkali vs alkaline earth metals",
+        "Halogen displacement reactions"
+      ]
+    }
+  ]
+}
