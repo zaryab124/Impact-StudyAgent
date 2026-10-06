@@ -1,0 +1,1128 @@
+// ==============================================================================
+// AI Live Paper Generator - Prisma Database Schema
+// Database Engine: PostgreSQL with pgvector extension
+// ==============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+// ------------------------------------------------------------------------------
+// ENUMS
+// ------------------------------------------------------------------------------
+
+enum UserRole {
+  STUDENT
+  TEACHER
+  EXAMINER
+  ADMIN
+}
+
+enum EntityStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+  ARCHIVED
+}
+
+enum SyllabusStatus {
+  DRAFT
+  UNDER_REVIEW
+  VERIFIED
+  PUBLISHED
+  ARCHIVED
+  DEPRECATED
+}
+
+enum SyllabusSourceType {
+  OFFICIAL_DOCUMENT
+  OFFICIAL_PDF
+  OFFICIAL_WEBPAGE
+  ADMIN_ENTRY
+  IMPORTED_STRUCTURED
+}
+
+enum AlignmentStatus {
+  MATCHED
+  PARTIAL_MATCH
+  UNMATCHED
+  REQUIRES_REVIEW
+}
+
+enum EligibilityStatus {
+  ELIGIBLE
+  EXCLUDED
+  UNKNOWN
+  REQUIRES_REVIEW
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING_REVIEW
+  VERIFIED
+  REJECTED
+}
+
+enum ExaminationRelevance {
+  HIGH
+  MEDIUM
+  LOW
+  OPTIONAL
+}
+
+enum GranularScope {
+  SUBTOPIC
+  HEADING
+  EXERCISE_QUESTION
+}
+
+enum DocumentStatus {
+  UPLOADED
+  VALIDATING
+  PROCESSING
+  EXTRACTING
+  STRUCTURING
+  CHUNKING
+  EMBEDDING
+  COMPLETED
+  COMPLETED_WITH_WARNINGS
+  FAILED
+}
+
+enum PageExtractionStatus {
+  PENDING
+  EXTRACTED
+  OCR_FALLBACK
+  FLAGGED_FOR_REVIEW
+  FAILED
+}
+
+enum ExtractionMethod {
+  NATIVE_PDF
+  OCR_VISION
+  SYNTHETIC
+}
+
+enum ChunkType {
+  HEADING
+  CONCEPT
+  DEFINITION
+  FORMULA
+  EXAMPLE
+  EXERCISE
+  TABLE
+  DIAGRAM
+  SUMMARY
+  SLO
+}
+
+enum ElementType {
+  DEFINITION
+  FORMULA
+  EXAMPLE
+  EXERCISE
+  TABLE
+  DIAGRAM
+  SLO
+}
+
+enum EmbeddingStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum QuestionType {
+  MCQ
+  SHORT_QUESTION
+  LONG_QUESTION
+  NUMERICAL
+  CONCEPTUAL
+  DEFINITION
+  EXPLANATION
+  COMPARISON
+  APPLICATION_BASED
+  DIAGRAM_BASED
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  DIFFICULT
+}
+
+enum ValidationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum PaperStatus {
+  DRAFT
+  VALIDATED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ExamAttemptStatus {
+  IN_PROGRESS
+  SUBMITTED
+  EVALUATED
+  ABANDONED
+}
+
+enum EvaluatedBy {
+  SYSTEM_OBJECTIVE
+  AI_RUBRIC
+  HUMAN_EXAMINER
+}
+
+enum SamplePaperStatus {
+  UPLOADED
+  EXTRACTING
+  ANALYZING
+  COMPLETED
+  COMPLETED_WITH_WARNINGS
+  FAILED
+  NEEDS_REVIEW
+}
+
+enum SamplePaperSourceType {
+  SAMPLE_PAPER
+  MODEL_PAPER
+  PAST_PAPER
+  PRACTICE_PAPER
+}
+
+enum SampleQuestionType {
+  MCQ
+  SHORT
+  LONG
+  NUMERICAL
+  CONCEPTUAL
+  DEFINITION
+  EXPLANATION
+  COMPARISON
+  APPLICATION
+  DIAGRAM
+  DERIVATION
+  PROBLEM_SOLVING
+  OTHER
+}
+
+enum SampleDifficultyLevel {
+  EASY
+  MEDIUM
+  DIFFICULT
+  UNKNOWN
+}
+
+enum PatternAggregationLevel {
+  SINGLE_PAPER
+  COMMON_PATTERN
+  OCCASIONAL_PATTERN
+  AGGREGATED
+}
+
+// ------------------------------------------------------------------------------
+// 1. IDENTITY & AUDIT
+// ------------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String?
+  role         UserRole @default(STUDENT)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs       AuditLog[]
+  generatedPapers GeneratedPaper[] @relation("AuthorGeneratedPapers")
+  examAttempts    ExamAttempt[]
+
+  @@index([role])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String // e.g. PAPER_GENERATED, BLUEPRINT_CREATED, AUTH_LOGIN
+  resource   String // e.g. GeneratedPaper, User, Board, Document
+  resourceId String?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json? // Detailed payload diff or contextual info
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([action])
+}
+
+// ------------------------------------------------------------------------------
+// 2. EDUCATION HIERARCHY
+// Board -> AcademicYear -> Class -> Subject -> Book -> Chapter -> Topic
+// ------------------------------------------------------------------------------
+
+model Board {
+  id        String       @id @default(uuid())
+  code      String       @unique // e.g. BISE_LHR, FEDERAL_BOARD, EDEXCEL, DEMO_BOARD
+  name      String
+  country   String       @default("Pakistan")
+  region    String?
+  status    EntityStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  academicYears AcademicYear[]
+  books         Book[]
+  syllabi       Syllabus[]
+  samplePapers  SamplePaper[]
+  paperPatterns PaperPattern[]
+
+  @@index([status])
+}
+
+model AcademicYear {
+  id        String       @id @default(uuid())
+  boardId   String
+  name      String // e.g. "Academic Session 2024-2025"
+  code      String // e.g. "2024-2025"
+  startDate DateTime?
+  endDate   DateTime?
+  status    EntityStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  board         Board          @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  classes       Class[]
+  books         Book[]
+  syllabi       Syllabus[]
+  documents     Document[]
+  samplePapers  SamplePaper[]
+  paperPatterns PaperPattern[]
+
+  @@unique([boardId, code])
+  @@index([boardId])
+  @@index([status])
+}
+
+model Class {
+  id             String       @id @default(uuid())
+  academicYearId String
+  name           String // e.g. "Class 9", "Grade 10"
+  numericLevel   Int // e.g. 9, 10, 11, 12
+  status         EntityStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  academicYear  AcademicYear   @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  subjects      Subject[]
+  books         Book[]
+  syllabi       Syllabus[]
+  samplePapers  SamplePaper[]
+  paperPatterns PaperPattern[]
+
+  @@unique([academicYearId, numericLevel])
+  @@index([academicYearId])
+  @@index([status])
+}
+
+model Subject {
+  id        String       @id @default(uuid())
+  classId   String
+  code      String // e.g. SCI-09, PHY-09, MTH-10
+  name      String // e.g. "General Science", "Physics"
+  status    EntityStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  class         Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  books         Book[]
+  samplePapers  SamplePaper[]
+  paperPatterns PaperPattern[]
+  syllabi       Syllabus[]
+
+  @@unique([classId, code])
+  @@index([classId])
+  @@index([status])
+}
+
+model Book {
+  id             String       @id @default(uuid())
+  title          String // e.g. "General Science Fundamentals"
+  edition        String? // e.g. "2025 First Edition"
+  publisher      String // e.g. "National Curriculum Textbook Board"
+  author         String?
+  isbn           String?
+  boardId        String?
+  academicYearId String?
+  classId        String
+  subjectId      String
+  version        String       @default("1.0") // Versioning support (e.g. "2025.1", "2026.1")
+  status         EntityStatus @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  board           Board?           @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  academicYear    AcademicYear?    @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  class           Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject         Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chapters        Chapter[]
+  documents       Document[]
+  questionSources QuestionSource[]
+
+  @@unique([subjectId, version])
+  @@index([subjectId])
+  @@index([classId])
+  @@index([academicYearId])
+  @@index([boardId])
+  @@index([status])
+}
+
+model Chapter {
+  id            String       @id @default(uuid())
+  bookId        String
+  chapterNumber Int
+  title         String // e.g. "Introduction to Scientific Inquiry"
+  description   String?      @db.Text
+  orderIndex    Int
+  status        EntityStatus @default(ACTIVE)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  book                 Book                  @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  topics               Topic[]
+  questionSources      QuestionSource[]
+  syllabusItems        SyllabusChapterItem[]
+  chunks               DocumentChunk[]
+  elements             EducationalElement[]
+  samplePaperQuestions SamplePaperQuestion[]
+
+  @@unique([bookId, chapterNumber])
+  @@unique([bookId, orderIndex])
+  @@index([bookId])
+  @@index([status])
+}
+
+model Topic {
+  id               String       @id @default(uuid())
+  chapterId        String
+  title            String // e.g. "Scientific Method & Observation"
+  description      String?      @db.Text
+  orderIndex       Int
+  topicCode        String? // e.g. "1.1"
+  learningOutcomes String?      @db.Text
+  status           EntityStatus @default(ACTIVE)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  chapter              Chapter                @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  questionSources      QuestionSource[]
+  syllabusItems        SyllabusTopicItem[]
+  topicMappings        SyllabusTopicMapping[]
+  chunks               DocumentChunk[]
+  elements             EducationalElement[]
+  samplePaperQuestions SamplePaperQuestion[]
+
+  @@unique([chapterId, orderIndex])
+  @@index([chapterId])
+  @@index([status])
+}
+
+// ------------------------------------------------------------------------------
+// 3. SYLLABUS FOUNDATION (Multi-Version & Flexible Inclusions/Weights)
+// ------------------------------------------------------------------------------
+
+model Syllabus {
+  id             String         @id @default(uuid())
+  title          String // e.g. "Official Grade 9 Science Syllabus 2025"
+  version        String // e.g. "2025-v1", "2026-v1"
+  description    String?        @db.Text
+  boardId        String?
+  academicYearId String
+  classId        String
+  subjectId      String
+  status         SyllabusStatus @default(DRAFT)
+  effectiveDate  DateTime?
+
+  // Source Provenance
+  sourceTitle        String?
+  sourceReference    String?
+  sourcePage         Int?
+  sourceUrl          String?
+  sourceType         SyllabusSourceType @default(ADMIN_ENTRY)
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  verifiedAt         DateTime?
+  verifiedBy         String?
+  verificationNotes  String?            @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  board           Board?                   @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  academicYear    AcademicYear             @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  class           Class                    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject         Subject                  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  chapterItems    SyllabusChapterItem[]
+  topicItems      SyllabusTopicItem[]
+  alignmentAudits SyllabusAlignmentAudit[]
+  samplePapers    SamplePaper[]
+  paperPatterns   PaperPattern[]
+
+  @@unique([subjectId, academicYearId, version])
+  @@index([subjectId])
+  @@index([academicYearId])
+  @@index([classId])
+  @@index([status])
+  @@index([verificationStatus])
+}
+
+model SyllabusChapterItem {
+  id                   String               @id @default(uuid())
+  syllabusId           String
+  chapterId            String
+  isIncluded           Boolean              @default(true)
+  weightage            Float? // Chapter weight in % or marks (independent from difficulty)
+  examinationRelevance ExaminationRelevance @default(HIGH)
+  alignmentStatus      AlignmentStatus      @default(UNMATCHED)
+  confidence           Float                @default(1.0)
+  eligibility          EligibilityStatus    @default(ELIGIBLE)
+  notes                String?              @db.Text
+  reviewNotes          String?              @db.Text
+  reviewedBy           String?
+  reviewedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  syllabus Syllabus @relation(fields: [syllabusId], references: [id], onDelete: Cascade)
+  chapter  Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  @@unique([syllabusId, chapterId])
+  @@index([syllabusId])
+  @@index([chapterId])
+  @@index([alignmentStatus])
+  @@index([eligibility])
+}
+
+model SyllabusTopicItem {
+  id                   String               @id @default(uuid())
+  syllabusId           String
+  topicId              String
+  isIncluded           Boolean              @default(true)
+  weightage            Float? // Topic weight (independent from difficulty)
+  examinationRelevance ExaminationRelevance @default(HIGH)
+  alignmentStatus      AlignmentStatus      @default(UNMATCHED)
+  confidence           Float                @default(1.0)
+  eligibility          EligibilityStatus    @default(ELIGIBLE)
+  notes                String?              @db.Text
+  reviewNotes          String?              @db.Text
+  reviewedBy           String?
+  reviewedAt           DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  syllabus      Syllabus               @relation(fields: [syllabusId], references: [id], onDelete: Cascade)
+  topic         Topic                  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  topicMappings SyllabusTopicMapping[]
+  granularItems SyllabusGranularItem[]
+
+  @@unique([syllabusId, topicId])
+  @@index([syllabusId])
+  @@index([topicId])
+  @@index([alignmentStatus])
+  @@index([eligibility])
+}
+
+model SyllabusTopicMapping {
+  id                  String          @id @default(uuid())
+  syllabusTopicItemId String
+  topicId             String
+  alignmentStatus     AlignmentStatus @default(MATCHED)
+  confidence          Float           @default(1.0)
+  notes               String?         @db.Text
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  syllabusTopicItem SyllabusTopicItem @relation(fields: [syllabusTopicItemId], references: [id], onDelete: Cascade)
+  topic             Topic             @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([syllabusTopicItemId, topicId])
+  @@index([syllabusTopicItemId])
+  @@index([topicId])
+}
+
+model SyllabusGranularItem {
+  id                  String            @id @default(uuid())
+  syllabusTopicItemId String
+  scope               GranularScope
+  identifier          String // e.g. "3.1.2", "Problem 3.4", "Atwood Machine"
+  title               String? // Human-readable title
+  isIncluded          Boolean
+  eligibility         EligibilityStatus
+
+  // Specific Provenance for Revised Syllabus Gazette
+  sourceDocument     String? // e.g. "PCTB_Accelerated_Learning_Program_2025.pdf"
+  sourcePage         Int?
+  sourceReference    String? // e.g. "Notification No. S.O.(A-II)1-8/2025"
+  effectiveDate      DateTime?
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  verifiedBy         String?
+  verificationNotes  String?            @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  syllabusTopicItem SyllabusTopicItem @relation(fields: [syllabusTopicItemId], references: [id], onDelete: Cascade)
+
+  @@unique([syllabusTopicItemId, scope, identifier])
+  @@index([syllabusTopicItemId])
+  @@index([scope, identifier])
+  @@index([eligibility])
+}
+
+model SyllabusAlignmentAudit {
+  id            String   @id @default(uuid())
+  syllabusId    String
+  itemId        String // ID of SyllabusChapterItem or SyllabusTopicItem
+  itemType      String // "CHAPTER" | "TOPIC"
+  reviewerId    String?
+  reviewerName  String?
+  decision      String // "CONFIRMED" | "REJECTED" | "MODIFIED" | "ALIGNMENT_TRIGGERED"
+  previousState Json?
+  newState      Json?
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  syllabus Syllabus @relation(fields: [syllabusId], references: [id], onDelete: Cascade)
+
+  @@index([syllabusId])
+  @@index([itemId])
+  @@index([createdAt])
+}
+
+// ------------------------------------------------------------------------------
+// 4. BOOK INTELLIGENCE, KNOWLEDGE & VECTOR STORE (Phase 3 Engine)
+// Document -> DocumentPage -> DocumentChunk (pgvector) + EducationalElement
+// ------------------------------------------------------------------------------
+
+model Document {
+  id                    String         @id @default(uuid())
+  bookId                String
+  academicYearId        String?
+  fileName              String
+  fileSize              BigInt
+  mimeType              String         @default("application/pdf")
+  storagePath           String
+  checksum              String // SHA-256 hash for document integrity and duplicate prevention
+  status                DocumentStatus @default(UPLOADED)
+  pageCount             Int            @default(0)
+  qualityReport         Json? // Validation report (pages, chapters, topics, element counts, provenance coverage)
+  processingLogs        Json? // Step-by-step pipeline log trace
+  errorMessage          String?        @db.Text
+  processingStartedAt   DateTime?
+  processingCompletedAt DateTime?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  book            Book                 @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  academicYear    AcademicYear?        @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  pages           DocumentPage[]
+  chunks          DocumentChunk[]
+  elements        EducationalElement[]
+  questionSources QuestionSource[]
+
+  @@unique([checksum])
+  @@index([bookId])
+  @@index([checksum])
+  @@index([status])
+}
+
+model DocumentPage {
+  id               String               @id @default(uuid())
+  documentId       String
+  pageNumber       Int
+  rawText          String?              @db.Text
+  status           PageExtractionStatus @default(PENDING)
+  extractionMethod ExtractionMethod     @default(NATIVE_PDF)
+  confidence       Float                @default(1.0)
+  contentType      String? // TEXT, TABLE, DIAGRAM, FORMULA, MIXED
+  hasTables        Boolean              @default(false)
+  hasDiagrams      Boolean              @default(false)
+  hasFormulas      Boolean              @default(false)
+  metadata         Json? // Layout coordinates, bounding boxes, or header metadata
+  createdAt        DateTime             @default(now())
+
+  document Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chunks   DocumentChunk[]
+  elements EducationalElement[]
+
+  @@unique([documentId, pageNumber])
+  @@index([documentId])
+  @@index([pageNumber])
+  @@index([status])
+}
+
+model DocumentChunk {
+  id               String                      @id @default(uuid())
+  documentId       String
+  pageId           String
+  chapterId        String?
+  topicId          String?
+  chunkIndex       Int
+  content          String                      @db.Text
+  tokenCount       Int                         @default(0)
+  chunkType        ChunkType                   @default(CONCEPT)
+  heading          String?
+  orderIndex       Int                         @default(1)
+  confidence       Float                       @default(1.0)
+  extractionMethod ExtractionMethod            @default(NATIVE_PDF)
+  embedding        Unsupported("vector(768)")? // Native pgvector embedding for Gemini text-embedding-004
+  embeddingStatus  EmbeddingStatus             @default(PENDING)
+  embeddingModel   String?                     @default("text-embedding-004")
+  metadata         Json? // Bounding box, structural location, tags, etc.
+  createdAt        DateTime                    @default(now())
+
+  document Document             @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  page     DocumentPage         @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  chapter  Chapter?             @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  topic    Topic?               @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  elements EducationalElement[]
+
+  @@index([documentId])
+  @@index([pageId])
+  @@index([chapterId])
+  @@index([topicId])
+  @@index([chunkType])
+  @@index([embeddingStatus])
+}
+
+model EducationalElement {
+  id          String      @id @default(uuid())
+  documentId  String
+  pageNumber  Int
+  chapterId   String?
+  topicId     String?
+  chunkId     String?
+  type        ElementType
+  title       String? // e.g. "Velocity Definition", "Newton's Second Law Formula"
+  content     Json // Structured representation (formulas, variables, table rows, etc.)
+  sourceText  String      @db.Text // Verbatim extracted textbook source text
+  isAiDerived Boolean     @default(false) // Strict indicator: true for AI visual descriptions
+  confidence  Float       @default(1.0)
+  metadata    Json? // Additional pedagogical metadata
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  document Document       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  chapter  Chapter?       @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  topic    Topic?         @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  chunk    DocumentChunk? @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+  page     DocumentPage?  @relation(fields: [documentId, pageNumber], references: [documentId, pageNumber], onDelete: Cascade)
+
+  @@index([documentId, type])
+  @@index([chapterId])
+  @@index([topicId])
+  @@index([chunkId])
+}
+
+// ------------------------------------------------------------------------------
+// 5. EXAMINATION HIERARCHY, BLUEPRINTS & QUESTIONS (Phase 1 Baseline)
+// ------------------------------------------------------------------------------
+
+model SamplePaper {
+  id                   String                @id @default(uuid())
+  subjectId            String
+  boardId              String?
+  academicYearId       String?
+  classId              String?
+  syllabusId           String?
+  title                String // e.g. "Model Paper Physics 2024"
+  year                 Int                   @default(2025)
+  totalMarks           Int                   @default(0)
+  durationMinutes      Int                   @default(180)
+  sourceUrl            String?
+  fileName             String?
+  fileSize             BigInt?
+  mimeType             String                @default("application/pdf")
+  storagePath          String?
+  checksum             String?               @unique // SHA-256 for duplicate detection
+  sourceType           SamplePaperSourceType @default(SAMPLE_PAPER)
+  sourceReference      String?
+  status               SamplePaperStatus     @default(UPLOADED)
+  extractionMethod     ExtractionMethod      @default(NATIVE_PDF)
+  pageCount            Int                   @default(0)
+  instructions         Json? // General and section instructions
+  extractedStructure   Json? // Extracted sections, question counts, numbering patterns
+  arithmeticValidation Json? // Deterministic marks sum, discrepancy flags, isConsistent
+  qualityReport        Json? // Factual analysis report (provenance coverage %, etc.)
+  processingLogs       Json? // Step-by-step pipeline log trace
+  errorMessage         String?               @db.Text
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  subject      Subject                  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  board        Board?                   @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  academicYear AcademicYear?            @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  class        Class?                   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  syllabus     Syllabus?                @relation(fields: [syllabusId], references: [id], onDelete: SetNull)
+  pages        SamplePaperPage[]
+  questions    SamplePaperQuestion[]
+  audits       SamplePaperAudit[]
+  patternLinks PatternSamplePaperLink[]
+
+  @@index([subjectId])
+  @@index([boardId])
+  @@index([academicYearId])
+  @@index([classId])
+  @@index([status])
+  @@index([checksum])
+}
+
+model SamplePaperPage {
+  id            String               @id @default(uuid())
+  samplePaperId String
+  pageNumber    Int
+  rawText       String?              @db.Text
+  status        PageExtractionStatus @default(EXTRACTED)
+  metadata      Json?
+  createdAt     DateTime             @default(now())
+
+  samplePaper SamplePaper @relation(fields: [samplePaperId], references: [id], onDelete: Cascade)
+
+  @@unique([samplePaperId, pageNumber])
+  @@index([samplePaperId])
+}
+
+model SamplePaperQuestion {
+  id                     String             @id @default(uuid())
+  samplePaperId          String
+  pageNumber             Int
+  originalNumber         String // e.g. "Q1(a)", "1.", "(iii)"
+  normalizedNumber       String // e.g. "1.1", "1", "3"
+  sectionName            String // e.g. "Section A"
+  questionOrder          Int
+  text                   String             @db.Text // Full extracted text (copyright-protected)
+  abstractRepresentation String?            @db.Text // Reusable abstract structure
+  primaryType            SampleQuestionType @default(SHORT)
+  secondaryTypes         Json? // Multi-attribute tags e.g. ["APPLICATION", "NUMERICAL"]
+  marks                  Int                @default(1)
+  isCompulsory           Boolean            @default(true)
+  choiceRule             Json? // e.g. { "available": 8, "required": 5, "selectionType": "CHOOSE_N" }
+
+  // Multi-signal Difficulty Evidence (Mandatory Refinement 1)
+  difficulty           SampleDifficultyLevel @default(UNKNOWN)
+  difficultyConfidence Float                 @default(0.0)
+  difficultyEvidence   Json? // { cognitiveComplexity, reasoningSteps, calculationComplexity, abstractionLevel, expectedSolutionDepth, prerequisiteKnowledge }
+  difficultyMethod     String                @default("MULTI_SIGNAL_HEURISTIC")
+
+  // Command Verb & Linguistic Features
+  commandVerb           String? // e.g. "Define", "Calculate", "Derive"
+  questionStem          String?
+  expectedResponseDepth String? // "SHORT_PHRASE", "STEP_BY_STEP_PROOF", etc.
+
+  // Curriculum Mapping (Distinct from difficulty - Mandatory Refinement 2)
+  chapterId           String?
+  topicId             String?
+  syllabusTopicItemId String?
+  sourceChunkId       String?
+  mappingConfidence   Float           @default(0.0)
+  mappingStatus       AlignmentStatus @default(UNMATCHED)
+
+  // Verification & Review
+  needsReview        Boolean            @default(false)
+  reviewNotes        String?            @db.Text
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  verificationStatus VerificationStatus @default(UNVERIFIED)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  samplePaper SamplePaper @relation(fields: [samplePaperId], references: [id], onDelete: Cascade)
+  chapter     Chapter?    @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  topic       Topic?      @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  @@index([samplePaperId])
+  @@index([primaryType])
+  @@index([difficulty])
+  @@index([mappingStatus])
+  @@index([needsReview])
+}
+
+model SamplePaperAudit {
+  id            String   @id @default(uuid())
+  samplePaperId String
+  questionId    String?
+  reviewerId    String?
+  reviewerName  String?
+  action        String // "CONFIRM_TYPE", "CONFIRM_DIFFICULTY", "CONFIRM_MAPPING", "CONFIRM_MARKS", "OVERRIDE_CHOICE", "REJECT_EXTRACTION"
+  previousValue Json?
+  newValue      Json?
+  reason        String   @db.Text
+  timestamp     DateTime @default(now())
+
+  samplePaper SamplePaper @relation(fields: [samplePaperId], references: [id], onDelete: Cascade)
+
+  @@index([samplePaperId])
+  @@index([questionId])
+  @@index([timestamp])
+}
+
+model PaperPattern {
+  id                     String                  @id @default(uuid())
+  subjectId              String
+  boardId                String?
+  academicYearId         String?
+  classId                String?
+  syllabusId             String?
+  version                String                  @default("v1")
+  title                  String // e.g. "Standard SSC Part 1 Board Pattern v1"
+  totalMarks             Int // Total marks enforced deterministically
+  durationMinutes        Int                     @default(180)
+  choiceRules            Json? // e.g. {"attemptAny": 5, "outOf": 8}
+  status                 EntityStatus            @default(ACTIVE)
+  validationStatus       ValidationStatus        @default(PENDING)
+  patternConfidence      Float                   @default(1.0)
+  supportingSampleCount  Int                     @default(1)
+  sectionStructure       Json? // Sections with typical question counts, marks, types
+  questionDistribution   Json? // Distribution across types and sections
+  marksDistribution      Json? // Compulsory vs optional vs total marks
+  difficultyObservations Json? // OBSERVED_DIFFICULTY_DISTRIBUTION (Mandatory Refinement 3)
+  targetDifficulty       Json? // TARGET_DIFFICULTY_DISTRIBUTION (e.g. ~33/33/33 for Phase 6)
+  topicDistribution      Json? // Observed chapter/topic frequencies
+  wordingCharacteristics Json? // Abstract command verbs, stems, lengths (Mandatory Refinement 4)
+  aggregationLevel       PatternAggregationLevel @default(SINGLE_PAPER)
+  validationReport       Json? // Deterministic arithmetic validation
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+
+  subject          Subject                  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  board            Board?                   @relation(fields: [boardId], references: [id], onDelete: SetNull)
+  academicYear     AcademicYear?            @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  class            Class?                   @relation(fields: [classId], references: [id], onDelete: SetNull)
+  syllabus         Syllabus?                @relation(fields: [syllabusId], references: [id], onDelete: SetNull)
+  sections         PaperSection[]
+  blueprints       PaperBlueprint[]
+  samplePaperLinks PatternSamplePaperLink[]
+
+  @@unique([subjectId, version])
+  @@index([subjectId])
+  @@index([boardId])
+  @@index([academicYearId])
+  @@index([classId])
+}
+
+model PatternSamplePaperLink {
+  id                 String   @id @default(uuid())
+  patternId          String
+  samplePaperId      String
+  contributionWeight Float    @default(1.0)
+  isOutlier          Boolean  @default(false)
+  outlierReason      String?
+  createdAt          DateTime @default(now())
+
+  pattern     PaperPattern @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  samplePaper SamplePaper  @relation(fields: [samplePaperId], references: [id], onDelete: Cascade)
+
+  @@unique([patternId, samplePaperId])
+  @@index([patternId])
+  @@index([samplePaperId])
+}
+
+model PaperSection {
+  id                 String   @id @default(uuid())
+  patternId          String
+  name               String // e.g. "Section A (Objective)"
+  sectionOrder       Int
+  totalMarks         Int
+  allowedTimeMinutes Int?
+  instructions       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  pattern            PaperPattern        @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  generatedQuestions GeneratedQuestion[]
+
+  @@unique([patternId, sectionOrder])
+  @@index([patternId])
+}
+
+model Question {
+  id             String       @id @default(uuid())
+  type           QuestionType
+  difficulty     Difficulty
+  text           String       @db.Text
+  options        Json? // For MCQs: ["Option A", "Option B", ...]
+  defaultMarks   Int
+  expectedAnswer String?      @db.Text
+  rubricCriteria Json? // Breakdown of marks criteria
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  source             QuestionSource?
+  generatedQuestions GeneratedQuestion[]
+
+  @@index([type])
+  @@index([difficulty])
+}
+
+model QuestionSource {
+  id                  String           @id @default(uuid())
+  questionId          String           @unique
+  documentId          String?
+  bookId              String?
+  chapterId           String?
+  topicId             String?
+  pageNumber          Int?
+  sourceChunkIds      Json? // Array of Chunk UUIDs: string[]
+  generationModel     String? // e.g. "gemini-1.5-pro"
+  generationTimestamp DateTime?        @default(now())
+  validationStatus    ValidationStatus @default(PENDING)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  question Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  document Document? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  book     Book?     @relation(fields: [bookId], references: [id], onDelete: SetNull)
+  chapter  Chapter?  @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  topic    Topic?    @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  @@index([documentId])
+  @@index([bookId])
+  @@index([chapterId])
+  @@index([topicId])
+  @@index([validationStatus])
+}
+
+model PaperBlueprint {
+  id                  String   @id @default(uuid())
+  patternId           String
+  name                String // e.g. "Midterm Physics 2025 Blueprint"
+  totalMarks          Int
+  totalQuestions      Int
+  durationMinutes     Int
+  easyCount           Int // Deterministically computed ~33%
+  mediumCount         Int // Deterministically computed ~33%
+  difficultCount      Int // Deterministically computed ~33%
+  chapterDistribution Json? // Map of chapterId to target count
+  choiceRules         Json? // Choice configuration
+  sectionSpecs        Json? // Detailed breakdown per section
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  pattern         PaperPattern     @relation(fields: [patternId], references: [id], onDelete: Cascade)
+  generatedPapers GeneratedPaper[]
+
+  @@index([patternId])
+}
+
+// ------------------------------------------------------------------------------
+// 6. GENERATED PAPERS, ATTEMPTS & EVALUATION (Phase 1 Baseline)
+// ------------------------------------------------------------------------------
+
+model GeneratedPaper {
+  id               String      @id @default(uuid())
+  blueprintId      String
+  authorId         String
+  title            String // e.g. "Annual Physics Examination 2025"
+  status           PaperStatus @default(DRAFT)
+  seed             String? // Deterministic pseudo-random seed
+  validationReport Json? // Programmatic marks & difficulty validation
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  blueprint    PaperBlueprint      @relation(fields: [blueprintId], references: [id], onDelete: Restrict)
+  author       User                @relation("AuthorGeneratedPapers", fields: [authorId], references: [id], onDelete: Restrict)
+  questions    GeneratedQuestion[]
+  examAttempts ExamAttempt[]
+
+  @@index([blueprintId])
+  @@index([authorId])
+  @@index([status])
+}
+
+model GeneratedQuestion {
+  id               String @id @default(uuid())
+  generatedPaperId String
+  questionId       String
+  sectionId        String
+  sequenceNumber   Int
+  marks            Int // Overridden or inherited marks
+
+  generatedPaper GeneratedPaper  @relation(fields: [generatedPaperId], references: [id], onDelete: Cascade)
+  question       Question        @relation(fields: [questionId], references: [id], onDelete: Restrict)
+  section        PaperSection    @relation(fields: [sectionId], references: [id], onDelete: Restrict)
+  studentAnswers StudentAnswer[]
+
+  @@unique([generatedPaperId, sequenceNumber])
+  @@index([generatedPaperId])
+  @@index([questionId])
+  @@index([sectionId])
+}
+
+model ExamAttempt {
+  id          String            @id @default(uuid())
+  userId      String
+  paperId     String
+  startedAt   DateTime          @default(now())
+  submittedAt DateTime?
+  status      ExamAttemptStatus @default(IN_PROGRESS)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paper   GeneratedPaper  @relation(fields: [paperId], references: [id], onDelete: Restrict)
+  answers StudentAnswer[]
+  result  Result?
+
+  @@index([userId])
+  @@index([paperId])
+  @@index([status])
+}
+
+model StudentAnswer {
+  id                  String       @id @default(uuid())
+  attemptId           String
+  generatedQuestionId String
+  submittedAnswer     String?      @db.Text
+  selectedOption      String?
+  marksAwarded        Decimal?     @db.Decimal(5, 2)
+  evaluationFeedback  String?      @db.Text
+  evaluatedBy         EvaluatedBy?
+  evaluatedAt         DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  attempt           ExamAttempt       @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  generatedQuestion GeneratedQuestion @relation(fields: [generatedQuestionId], references: [id], onDelete: Restrict)
+
+  @@unique([attemptId, generatedQuestionId])
+  @@index([attemptId])
+  @@index([generatedQuestionId])
+}
+
+model Result {
+  id                 String   @id @default(uuid())
+  attemptId          String   @unique
+  totalMarksObtained Decimal  @db.Decimal(6, 2)
+  totalMarksPossible Decimal  @db.Decimal(6, 2)
+  percentage         Decimal  @db.Decimal(5, 2)
+  grade              String // e.g. "A+", "A", "B", "C"
+  feedbackSummary    String?  @db.Text
+  generatedAt        DateTime @default(now())
+
+  attempt ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+}

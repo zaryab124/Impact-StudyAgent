@@ -1,0 +1,33 @@
+export type UserRole = "STUDENT" | "TEACHER" | "EXAMINER" | "CURRICULUM_OFFICER" | "ADMIN";
+
+export enum Permission {
+  READ_CURRICULUM = "READ_CURRICULUM",
+  MANAGE_CURRICULUM = "MANAGE_CURRICULUM",
+  IMPORT_DATA = "IMPORT_DATA",
+  CREATE_BLUEPRINT = "CREATE_BLUEPRINT",
+  GENERATE_PAPER = "GENERATE_PAPER",
+  VALIDATE_QUESTION = "VALIDATE_QUESTION",
+  PUBLISH_EXAM = "PUBLISH_EXAM",
+  TAKE_EXAM = "TAKE_EXAM",
+  VIEW_OWN_RESULT = "VIEW_OWN_RESULT",
+  VIEW_ALL_RESULTS = "VIEW_ALL_RESULTS",
+  MANAGE_USERS = "MANAGE_USERS",
+  VIEW_AUDIT_LOGS = "VIEW_AUDIT_LOGS",
+  SYSTEM_SETTINGS = "SYSTEM_SETTINGS",
+  MANAGE_AI_CONFIG = "MANAGE_AI_CONFIG",
+  VIEW_SYSTEM_HEALTH = "VIEW_SYSTEM_HEALTH",
+  EXECUTE_BACKGROUND_JOBS = "EXECUTE_BACKGROUND_JOBS",
+}
+
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+}
+
+export interface SessionContext {
+  user: AuthenticatedUser | null;
+  isAuthenticated: boolean;
+}
