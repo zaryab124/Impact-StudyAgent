@@ -13,7 +13,8 @@ export class LocalStorageProvider implements IStorageProvider {
   private readonly basePath: string;
 
   constructor(baseDirectory?: string) {
-    this.basePath = path.resolve(baseDirectory || "./storage-vault");
+    const defaultDir = process.env.STORAGE_LOCAL_PATH || (process.env.VERCEL ? "/tmp/storage-vault" : "./storage-vault");
+    this.basePath = path.resolve(baseDirectory || defaultDir);
   }
 
   /**

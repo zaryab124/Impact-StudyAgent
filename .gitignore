@@ -34,3 +34,5 @@ Thumbs.db
 uploads/
 scratch/
 storage-vault/recovery_checks/
+.vercel
+
