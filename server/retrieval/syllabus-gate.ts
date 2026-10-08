@@ -14,6 +14,25 @@ export interface HierarchyValidationResult {
   syllabusStatus?: string;
 }
 
+export function isPunjabBoard(boardId?: string | null): boolean {
+  if (!boardId) return false;
+  const lower = boardId.toLowerCase();
+  return (
+    lower.startsWith("board-punjab-") ||
+    lower.startsWith("bise_") ||
+    lower.includes("punjab") ||
+    ["lhr", "rwp", "fsd", "grw", "mul", "swl", "sgd", "bwp", "dgk"].some((code) => lower.includes(code))
+  );
+}
+
+export function areBoardsCompatible(syllabusBoardId?: string | null, requestBoardId?: string | null): boolean {
+  if (!syllabusBoardId || !requestBoardId) return true;
+  if (syllabusBoardId === requestBoardId) return true;
+  // All 9 Punjab Examination Boards share identical PCTB textbooks & syllabus
+  if (isPunjabBoard(syllabusBoardId) && isPunjabBoard(requestBoardId)) return true;
+  return false;
+}
+
 export class SyllabusGate {
   public static syllabusCache = new Map<string, any>();
 
@@ -42,8 +61,19 @@ export class SyllabusGate {
       isAdmin = false,
     } = params;
 
-    let syllabus: any = SyllabusGate.syllabusCache.get(syllabusId);
-    if (!syllabus) {
+    // Scoped cache key prevents cross-board cache pollution when generic IDs like "syl-verified-2025" are used
+    const scopedCacheKey = `${syllabusId}_${boardId}_${academicYearId || "any"}_${classId || "any"}_${subjectId || "any"}`;
+    let syllabus: any = SyllabusGate.syllabusCache.get(scopedCacheKey);
+
+    if (!syllabus && syllabusId) {
+      // Check if exact ID is cached from DB
+      const directCached = SyllabusGate.syllabusCache.get(syllabusId);
+      if (directCached && areBoardsCompatible(directCached.boardId, boardId)) {
+        syllabus = directCached;
+      }
+    }
+
+    if (!syllabus && syllabusId) {
       try {
         syllabus = await prisma.syllabus.findUnique({
           where: { id: syllabusId },
@@ -60,8 +90,33 @@ export class SyllabusGate {
             },
           },
         });
+
+        // Fallback: search for active syllabus matching the subject & class
+        if (!syllabus && subjectId) {
+          syllabus = await prisma.syllabus.findFirst({
+            where: {
+              subjectId,
+              classId: classId || undefined,
+              status: { in: ["VERIFIED", "PUBLISHED"] },
+            },
+            include: {
+              board: true,
+              academicYear: true,
+              class: true,
+              subject: true,
+              chapterItems: true,
+              topicItems: {
+                include: {
+                  granularItems: true,
+                },
+              },
+            },
+          });
+        }
+
         if (syllabus) {
-          SyllabusGate.syllabusCache.set(syllabusId, syllabus);
+          SyllabusGate.syllabusCache.set(syllabus.id, syllabus);
+          SyllabusGate.syllabusCache.set(scopedCacheKey, syllabus);
         }
       } catch {
         // Database offline or mock testing environment
@@ -119,7 +174,7 @@ export class SyllabusGate {
           topicItems: [],
         };
       } else {
-        // Fallback default verified syllabus for offline/unit testing
+        // Fallback default verified syllabus for offline/unit testing & initial live runs
         syllabus = {
           id: syllabusId,
           boardId,
@@ -134,12 +189,12 @@ export class SyllabusGate {
         };
       }
       if (syllabus) {
-        SyllabusGate.syllabusCache.set(syllabusId, syllabus);
+        SyllabusGate.syllabusCache.set(scopedCacheKey, syllabus);
       }
     }
 
-    // 1. Verify Board alignment
-    if (syllabus.boardId && syllabus.boardId !== boardId) {
+    // 1. Verify Board alignment (allowing Punjab-wide board compatibility)
+    if (syllabus.boardId && !areBoardsCompatible(syllabus.boardId, boardId)) {
       return {
         isValid: false,
         error: `Hierarchy mismatch: Syllabus belongs to board "${syllabus.boardId}", but request specified board "${boardId}".`,
@@ -147,7 +202,13 @@ export class SyllabusGate {
     }
 
     // 2. Verify Academic Year alignment
-    if (syllabus.academicYearId && syllabus.academicYearId !== academicYearId) {
+    const isAcademicYearFlexible =
+      !academicYearId ||
+      !syllabus.academicYearId ||
+      academicYearId === "year-current" ||
+      syllabus.academicYearId === "year-current";
+
+    if (!isAcademicYearFlexible && syllabus.academicYearId !== academicYearId) {
       return {
         isValid: false,
         error: `Hierarchy mismatch: Syllabus belongs to academic year "${syllabus.academicYearId}", but request specified "${academicYearId}".`,
@@ -155,7 +216,7 @@ export class SyllabusGate {
     }
 
     // 3. Verify Class alignment
-    if (syllabus.classId && syllabus.classId !== classId) {
+    if (syllabus.classId && classId && syllabus.classId !== classId) {
       return {
         isValid: false,
         error: `Hierarchy mismatch: Syllabus belongs to class "${syllabus.classId}", but request specified class "${classId}".`,
@@ -163,7 +224,7 @@ export class SyllabusGate {
     }
 
     // 4. Verify Subject alignment
-    if (syllabus.subjectId && syllabus.subjectId !== subjectId) {
+    if (syllabus.subjectId && subjectId && syllabus.subjectId !== subjectId) {
       return {
         isValid: false,
         error: `Hierarchy mismatch: Syllabus belongs to subject "${syllabus.subjectId}", but request specified subject "${subjectId}".`,

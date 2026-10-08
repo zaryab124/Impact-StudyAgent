@@ -30,6 +30,13 @@ export class ExamRepository {
 
     if (process.env.NODE_ENV !== "test") {
       try {
+        const prismaStatus =
+          paper.status === "ACTIVE" || paper.status === "FROZEN" || paper.status === "PUBLISHED"
+            ? "PUBLISHED"
+            : paper.status === "ARCHIVED" || paper.status === "CLOSED"
+            ? "ARCHIVED"
+            : "DRAFT";
+
         await prisma.generatedPaper.upsert({
           where: { id: paper.id },
           create: {
@@ -37,12 +44,12 @@ export class ExamRepository {
             blueprintId: paper.blueprintId,
             authorId: "system-admin",
             title: paper.title,
-            status: paper.status as any,
+            status: prismaStatus as any,
             validationReport: paper.validationReport as any,
           },
           update: {
             title: paper.title,
-            status: paper.status as any,
+            status: prismaStatus as any,
             validationReport: paper.validationReport as any,
           },
         });

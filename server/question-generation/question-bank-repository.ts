@@ -29,11 +29,20 @@ export class QuestionBankRepository {
 
     if (process.env.NODE_ENV !== "test") {
       try {
+        const prismaType =
+          candidate.questionType === "SHORT"
+            ? "SHORT_QUESTION"
+            : candidate.questionType === "LONG"
+            ? "LONG_QUESTION"
+            : candidate.questionType === "MCQ"
+            ? "MCQ"
+            : "CONCEPTUAL";
+
         await prisma.question.upsert({
           where: { id: candidate.id },
           create: {
             id: candidate.id,
-            type: candidate.questionType as any,
+            type: prismaType as any,
             difficulty: candidate.difficulty as any,
             text: candidate.questionText,
             options: candidate.answerMaterial?.options?.map((o) => o.text) as any,
