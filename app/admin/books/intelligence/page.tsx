@@ -36,10 +36,11 @@ export default function BookIntelligencePage() {
   const [processing, setProcessing] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error" | "warning"; message: string } | null>(null);
 
-  // Upload Form State
   const [selectedBookId, setSelectedBookId] = useState<string>("");
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [autoProcess, setAutoProcess] = useState<boolean>(true);
+  const [uploadProgress, setUploadProgress] = useState<string>("");
+
 
   // Elements Browser State
   const [elements, setElements] = useState<any[]>([]);
@@ -138,7 +139,7 @@ export default function BookIntelligencePage() {
     }
   };
 
-  // Upload handler
+  // Upload handler with automatic chunking for files > 4MB (bypasses Vercel 4.5MB limit)
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadFile) {
@@ -152,42 +153,111 @@ export default function BookIntelligencePage() {
 
     setUploading(true);
     setFeedback(null);
+    setUploadProgress("");
 
     try {
-      const formData = new FormData();
-      formData.append("file", uploadFile);
-      formData.append("bookId", selectedBookId);
-      formData.append("autoProcess", autoProcess ? "true" : "false");
+      const CHUNK_SIZE = 3 * 1024 * 1024; // 3MB per chunk (safely under Vercel 4.5MB serverless limit)
+      let finalData: any = null;
 
-      const res = await fetch("/api/documents/upload", {
-        method: "POST",
-        body: formData,
-      });
+      if (uploadFile.size > CHUNK_SIZE) {
+        // Chunked upload pipeline
+        const totalChunks = Math.ceil(uploadFile.size / CHUNK_SIZE);
+        const uploadId = `upl_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 
-      const data = await res.json();
+        for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+          const start = chunkIndex * CHUNK_SIZE;
+          const end = Math.min(start + CHUNK_SIZE, uploadFile.size);
+          const chunkBlob = uploadFile.slice(start, end);
 
-      if (!res.ok) {
-        throw new Error(data.error?.message || "Failed to upload document.");
+          const pct = Math.round(((chunkIndex + 1) / totalChunks) * 100);
+          setUploadProgress(`Uploading chunk ${chunkIndex + 1} of ${totalChunks} (${pct}%)...`);
+
+          const formData = new FormData();
+          formData.append("chunk", chunkBlob, uploadFile.name);
+          formData.append("uploadId", uploadId);
+          formData.append("chunkIndex", chunkIndex.toString());
+          formData.append("totalChunks", totalChunks.toString());
+          formData.append("fileName", uploadFile.name);
+          formData.append("bookId", selectedBookId);
+          formData.append("autoProcess", autoProcess ? "true" : "false");
+
+          const res = await fetch("/api/documents/upload-chunk", {
+            method: "POST",
+            body: formData,
+          });
+
+          let chunkResData: any;
+          const contentType = res.headers.get("content-type") || "";
+          if (contentType.includes("application/json")) {
+            chunkResData = await res.json();
+          } else {
+            const textErr = await res.text();
+            throw new Error(`Server returned HTTP ${res.status}: ${textErr.substring(0, 150)}`);
+          }
+
+          if (!res.ok) {
+            throw new Error(chunkResData?.error?.message || `Failed to upload chunk ${chunkIndex + 1}.`);
+          }
+
+          if (chunkResData.data?.completed) {
+            finalData = chunkResData.data;
+          }
+        }
+      } else {
+        // Direct upload for small files <= 3MB
+        setUploadProgress("Uploading textbook...");
+        const formData = new FormData();
+        formData.append("file", uploadFile);
+        formData.append("bookId", selectedBookId);
+        formData.append("autoProcess", autoProcess ? "true" : "false");
+
+        const res = await fetch("/api/documents/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        let data: any;
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const rawText = await res.text();
+          if (res.status === 413) {
+            throw new Error("File exceeds server payload limits (HTTP 413). Please try again using chunked upload.");
+          }
+          throw new Error(`Server returned HTTP ${res.status}: ${rawText.substring(0, 150)}`);
+        }
+
+        if (!res.ok) {
+          throw new Error(data.error?.message || "Failed to upload document.");
+        }
+        finalData = data.data;
       }
 
       setFeedback({
         type: "success",
-        message: `Textbook "${uploadFile.name}" ingested successfully! Status: ${data.data.status}`,
+        message: `Textbook "${uploadFile.name}" ingested successfully! Status: ${finalData?.status || "REGISTERED"}`,
       });
 
       setUploadFile(null);
+      setUploadProgress("");
+
       // Reload document list
       const updatedDocsRes = await fetch("/api/documents").then((r) => r.json());
       if (updatedDocsRes.data?.documents) {
         setDocuments(updatedDocsRes.data.documents);
-        setSelectedDocId(data.data.id);
+        if (finalData?.id) {
+          setSelectedDocId(finalData.id);
+        }
       }
     } catch (err: any) {
       setFeedback({ type: "error", message: err.message });
+      setUploadProgress("");
     } finally {
       setUploading(false);
     }
   };
+
 
   // Trigger processing pipeline
   const handleTriggerProcess = async (docId: string) => {
@@ -381,7 +451,15 @@ export default function BookIntelligencePage() {
                   </label>
                 </div>
 
+                {uploadProgress && (
+                  <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-xl text-xs text-indigo-700 font-semibold flex items-center gap-2 animate-pulse">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-600 shrink-0" />
+                    <span>{uploadProgress}</span>
+                  </div>
+                )}
+
                 <button
+
                   type="submit"
                   disabled={uploading || !uploadFile}
                   className="w-full mt-4 py-2.5 px-4 rounded-xl text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed shadow transition-colors flex items-center justify-center gap-2"

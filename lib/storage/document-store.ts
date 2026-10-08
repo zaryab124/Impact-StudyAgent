@@ -2,7 +2,10 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 
-const UPLOADS_DIR = path.resolve(process.cwd(), "uploads", "documents");
+const UPLOADS_DIR = process.env.VERCEL
+  ? path.resolve("/tmp", "uploads", "documents")
+  : path.resolve(process.cwd(), "uploads", "documents");
+
 
 export interface StoredDocumentMetadata {
   fileName: string;

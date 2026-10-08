@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   BookOpen,
+  Printer,
 } from "lucide-react";
 
 export default function PaperPreviewPage() {
@@ -115,23 +116,34 @@ export default function PaperPreviewPage() {
           <span>Back to Dashboard</span>
         </Link>
 
-        <button
-          onClick={handleStartExam}
-          disabled={starting}
-          className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-950 hover:bg-emerald-500 active:scale-95 transition-all"
-        >
-          {starting ? (
-            <>
-              <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              <span>Starting Exam Session...</span>
-            </>
-          ) : (
-            <>
-              <Play className="h-4 w-4 fill-white" />
-              <span>START EXAM</span>
-            </>
-          )}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={`/student/paper/${paperId}/print`}
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-600/20 px-4 py-2.5 text-xs font-bold text-indigo-300 shadow-md hover:bg-indigo-600/30 hover:border-indigo-400 active:scale-95 transition-all"
+          >
+            <Printer className="h-4 w-4 text-indigo-300" />
+            <span>PRINT READY PAPER (FOR ORGANIZATION)</span>
+          </Link>
+
+          <button
+            onClick={handleStartExam}
+            disabled={starting}
+            className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-emerald-950 hover:bg-emerald-500 active:scale-95 transition-all"
+          >
+            {starting ? (
+              <>
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Starting Exam Session...</span>
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 fill-white" />
+                <span>START EXAM</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Hero Paper Meta Card */}
@@ -264,7 +276,16 @@ export default function PaperPreviewPage() {
         </div>
 
         {/* Bottom Start Exam CTA */}
-        <div className="mt-8 border-t border-slate-800 pt-6 flex justify-end">
+        <div className="mt-8 border-t border-slate-800 pt-6 flex flex-wrap items-center justify-between gap-4">
+          <Link
+            href={`/student/paper/${paperId}/print`}
+            target="_blank"
+            className="inline-flex items-center gap-2 rounded-xl border border-indigo-500/40 bg-indigo-600/20 px-6 py-3.5 text-xs font-bold text-indigo-300 shadow-md hover:bg-indigo-600/30 hover:border-indigo-400 active:scale-95 transition-all"
+          >
+            <Printer className="h-4 w-4 text-indigo-300" />
+            <span>PRINT READY TEST PAPER (FOR ORGANIZATION)</span>
+          </Link>
+
           <button
             onClick={handleStartExam}
             disabled={starting}
