@@ -30,10 +30,11 @@ export class ExamRepository {
 
     if (process.env.NODE_ENV !== "test") {
       try {
+        const statusStr = String(paper.status || "");
         const prismaStatus =
-          paper.status === "ACTIVE" || paper.status === "FROZEN" || paper.status === "PUBLISHED"
+          statusStr === "ACTIVE" || statusStr === "FROZEN" || statusStr === "PUBLISHED"
             ? "PUBLISHED"
-            : paper.status === "ARCHIVED" || paper.status === "CLOSED"
+            : statusStr === "ARCHIVED" || statusStr === "CLOSED"
             ? "ARCHIVED"
             : "DRAFT";
 
