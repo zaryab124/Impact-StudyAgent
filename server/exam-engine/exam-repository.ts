@@ -38,12 +38,29 @@ export class ExamRepository {
             ? "ARCHIVED"
             : "DRAFT";
 
+        let authorId = (paper as any).authorId;
+        if (!authorId || authorId === "system-admin") {
+          const defaultUser = await prisma.user.findFirst();
+          if (defaultUser) {
+            authorId = defaultUser.id;
+          } else {
+            const adminUser = await prisma.user.create({
+              data: {
+                email: "admin@studyagent.edu.pk",
+                name: "System Administrator",
+                role: "ADMIN",
+              },
+            });
+            authorId = adminUser.id;
+          }
+        }
+
         await prisma.generatedPaper.upsert({
           where: { id: paper.id },
           create: {
             id: paper.id,
             blueprintId: paper.blueprintId,
-            authorId: "system-admin",
+            authorId,
             title: paper.title,
             status: prismaStatus as any,
             validationReport: paper.validationReport as any,

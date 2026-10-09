@@ -84,7 +84,7 @@ export class LivePaperGenerator {
       academicYearId: config.academicYearId || "year-current",
       classId: config.classId,
       subjectId: config.subjectId,
-      syllabusId: config.syllabusId || "syl-verified-2025",
+      syllabusId: config.syllabusId,
       bookId: config.bookId,
       diagnosticMode: false,
       isAdmin: true,

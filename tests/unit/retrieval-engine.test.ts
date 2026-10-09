@@ -234,6 +234,20 @@ describe("Phase 6: Knowledge Retrieval Engine Unit Tests", () => {
       });
     });
 
+    it("Scenario 2b: Inter-compatible Punjab and Federal boards allow shared national curriculum syllabus", async () => {
+      // Federal board syllabus (board-fed-01) requested with Punjab BISE Lahore (board-punjab-lhr)
+      const res = await SyllabusGate.validateHierarchy({
+        boardId: "board-punjab-lhr",
+        academicYearId: baseRequest.academicYearId,
+        classId: baseRequest.classId,
+        subjectId: baseRequest.subjectId,
+        syllabusId: "syl-physics-2025",
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.error).toBeUndefined();
+    });
+
     it("Scenario 3: Unverified syllabus rejection (DRAFT, UNDER_REVIEW, ARCHIVED)", async () => {
       await expect(
         RetrievalService.retrieveKnowledge({

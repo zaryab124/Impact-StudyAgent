@@ -227,12 +227,21 @@ export class BoardPolicyService {
         orderBy: { createdAt: "desc" },
       });
 
-      if (dbPolicies && dbPolicies.length > 0) {
+      if (dbPolicies && dbPolicies.length >= DEFAULT_POLICIES.length) {
         return dbPolicies.map((p: any) => ({
           ...p,
           boardCode: p.board?.code,
           parameters: p.parameters as PolicyParameters,
         }));
+      } else if (dbPolicies && dbPolicies.length > 0) {
+        const dbMapped = dbPolicies.map((p: any) => ({
+          ...p,
+          boardCode: p.board?.code,
+          parameters: p.parameters as PolicyParameters,
+        }));
+        const existingCodes = new Set(dbMapped.map((p: any) => p.policyCode));
+        const missing = DEFAULT_POLICIES.filter((p) => !existingCodes.has(p.policyCode));
+        return [...dbMapped, ...missing];
       }
     } catch {
       // Prisma offline, fallback to in-memory store

@@ -25,11 +25,28 @@ export function isPunjabBoard(boardId?: string | null): boolean {
   );
 }
 
+export function isFederalBoard(boardId?: string | null): boolean {
+  if (!boardId) return false;
+  const lower = boardId.toLowerCase();
+  return (
+    lower.startsWith("board-fed-") ||
+    lower.includes("fbise") ||
+    lower.includes("federal")
+  );
+}
+
+export function isPakistanRecognizedBoard(boardId?: string | null): boolean {
+  if (!boardId) return false;
+  return isPunjabBoard(boardId) || isFederalBoard(boardId);
+}
+
 export function areBoardsCompatible(syllabusBoardId?: string | null, requestBoardId?: string | null): boolean {
   if (!syllabusBoardId || !requestBoardId) return true;
   if (syllabusBoardId === requestBoardId) return true;
   // All 9 Punjab Examination Boards share identical PCTB textbooks & syllabus
   if (isPunjabBoard(syllabusBoardId) && isPunjabBoard(requestBoardId)) return true;
+  // Federal Board (FBISE) and Punjab Examination Boards share standardized National Curriculum
+  if (isPakistanRecognizedBoard(syllabusBoardId) && isPakistanRecognizedBoard(requestBoardId)) return true;
   return false;
 }
 
@@ -42,10 +59,10 @@ export class SyllabusGate {
    */
   public static async validateHierarchy(params: {
     boardId: string;
-    academicYearId: string;
+    academicYearId?: string;
     classId: string;
     subjectId: string;
-    syllabusId: string;
+    syllabusId?: string;
     bookId?: string;
     diagnosticMode?: boolean;
     isAdmin?: boolean;
@@ -62,41 +79,48 @@ export class SyllabusGate {
     } = params;
 
     // Scoped cache key prevents cross-board cache pollution when generic IDs like "syl-verified-2025" are used
-    const scopedCacheKey = `${syllabusId}_${boardId}_${academicYearId || "any"}_${classId || "any"}_${subjectId || "any"}`;
+    const effectiveSyllabusId = (syllabusId && syllabusId !== "syl-verified-2025") ? syllabusId : undefined;
+    const scopedCacheKey = `${effectiveSyllabusId || "auto"}_${boardId}_${academicYearId || "any"}_${classId || "any"}_${subjectId || "any"}`;
     let syllabus: any = SyllabusGate.syllabusCache.get(scopedCacheKey);
 
-    if (!syllabus && syllabusId) {
+    if (!syllabus && effectiveSyllabusId) {
       // Check if exact ID is cached from DB
-      const directCached = SyllabusGate.syllabusCache.get(syllabusId);
+      const directCached = SyllabusGate.syllabusCache.get(effectiveSyllabusId);
       if (directCached && areBoardsCompatible(directCached.boardId, boardId)) {
         syllabus = directCached;
       }
     }
 
-    if (!syllabus && syllabusId) {
+    if (!syllabus) {
       try {
-        syllabus = await prisma.syllabus.findUnique({
-          where: { id: syllabusId },
-          include: {
-            board: true,
-            academicYear: true,
-            class: true,
-            subject: true,
-            chapterItems: true,
-            topicItems: {
-              include: {
-                granularItems: true,
+        if (effectiveSyllabusId) {
+          const direct = await prisma.syllabus.findUnique({
+            where: { id: effectiveSyllabusId },
+            include: {
+              board: true,
+              academicYear: true,
+              class: true,
+              subject: true,
+              chapterItems: true,
+              topicItems: {
+                include: {
+                  granularItems: true,
+                },
               },
             },
-          },
-        });
+          });
+          if (direct) {
+            syllabus = direct;
+          }
+        }
 
-        // Fallback: search for active syllabus matching the subject & class
+        // 1. Search for active syllabus matching this board, subject & class first
         if (!syllabus && subjectId) {
           syllabus = await prisma.syllabus.findFirst({
             where: {
               subjectId,
               classId: classId || undefined,
+              boardId: boardId || undefined,
               status: { in: ["VERIFIED", "PUBLISHED"] },
             },
             include: {
@@ -114,6 +138,32 @@ export class SyllabusGate {
           });
         }
 
+        // 2. Fallback: search for active syllabus matching the subject & class across compatible boards
+        if (!syllabus && subjectId) {
+          const candidates = await prisma.syllabus.findMany({
+            where: {
+              subjectId,
+              classId: classId || undefined,
+              status: { in: ["VERIFIED", "PUBLISHED"] },
+            },
+            include: {
+              board: true,
+              academicYear: true,
+              class: true,
+              subject: true,
+              chapterItems: true,
+              topicItems: {
+                include: {
+                  granularItems: true,
+                },
+              },
+            },
+            take: 10,
+          });
+
+          syllabus = candidates.find((c: any) => areBoardsCompatible(c.boardId, boardId)) || candidates[0];
+        }
+
         if (syllabus) {
           SyllabusGate.syllabusCache.set(syllabus.id, syllabus);
           SyllabusGate.syllabusCache.set(scopedCacheKey, syllabus);
@@ -125,18 +175,19 @@ export class SyllabusGate {
 
     // If DB is offline or mock environment in test
     if (!syllabus) {
+      const synId = syllabusId || "syl-verified-2025";
       // If syllabus ID indicates invalid format or explicit test mock
-      if (syllabusId.startsWith("non-existent") || syllabusId.includes("invalid")) {
+      if (synId.startsWith("non-existent") || synId.includes("invalid")) {
         return {
           isValid: false,
-          error: `Syllabus with ID "${syllabusId}" does not exist in the platform registry.`,
+          error: `Syllabus with ID "${synId}" does not exist in the platform registry.`,
         };
       }
 
       // Check for synthetic/mock syllabus representation in unit tests
-      if (syllabusId === "syl-draft" || syllabusId.includes("draft")) {
+      if (synId === "syl-draft" || synId.includes("draft")) {
         syllabus = {
-          id: syllabusId,
+          id: synId,
           boardId,
           academicYearId,
           classId,
@@ -147,9 +198,9 @@ export class SyllabusGate {
           chapterItems: [],
           topicItems: [],
         };
-      } else if (syllabusId === "syl-under-review" || syllabusId.includes("under-review")) {
+      } else if (synId === "syl-under-review" || synId.includes("under-review")) {
         syllabus = {
-          id: syllabusId,
+          id: synId,
           boardId,
           academicYearId,
           classId,
@@ -160,9 +211,9 @@ export class SyllabusGate {
           chapterItems: [],
           topicItems: [],
         };
-      } else if (syllabusId === "syl-archived" || syllabusId.includes("archived")) {
+      } else if (synId === "syl-archived" || synId.includes("archived")) {
         syllabus = {
-          id: syllabusId,
+          id: synId,
           boardId,
           academicYearId,
           classId,
@@ -176,7 +227,7 @@ export class SyllabusGate {
       } else {
         // Fallback default verified syllabus for offline/unit testing & initial live runs
         syllabus = {
-          id: syllabusId,
+          id: synId,
           boardId,
           academicYearId,
           classId,
