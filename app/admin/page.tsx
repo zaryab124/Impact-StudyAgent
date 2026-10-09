@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   Rocket,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
 type AdminTab =
   | "boards"
@@ -35,7 +36,7 @@ type AdminTab =
   | "chaptersTopics"
   | "syllabus";
 
-export default function AdminPage() {
+function AdminPageContent() {
   const [activeTab, setActiveTab] = useState<AdminTab>("boards");
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -1099,5 +1100,13 @@ export default function AdminPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminPage() {
+  return (
+    <RouteGuard allowedRoles={["ADMIN", "CURRICULUM_OFFICER"]} portalName="Admin Console">
+      <AdminPageContent />
+    </RouteGuard>
   );
 }

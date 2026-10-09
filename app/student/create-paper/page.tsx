@@ -15,8 +15,9 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { calculateDifficultyDistribution } from "@/lib/blueprint/calculator";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function CreatePaperPage() {
+function CreatePaperContent() {
   const router = useRouter();
 
   // Selections
@@ -460,5 +461,13 @@ export default function CreatePaperPage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function CreatePaperPage() {
+  return (
+    <RouteGuard allowedRoles={["STUDENT", "ADMIN"]} portalName="Create Paper">
+      <CreatePaperContent />
+    </RouteGuard>
   );
 }

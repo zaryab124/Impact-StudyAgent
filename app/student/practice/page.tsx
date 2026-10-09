@@ -12,8 +12,9 @@ import {
   AlertCircle,
   Play,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function PracticePage() {
+function PracticeContent() {
   const router = useRouter();
 
   const [subjects, setSubjects] = useState<any[]>([]);
@@ -243,5 +244,13 @@ export default function PracticePage() {
         </div>
       </form>
     </div>
+  );
+}
+
+export default function PracticePage() {
+  return (
+    <RouteGuard allowedRoles={["STUDENT", "ADMIN"]} portalName="Practice Drills">
+      <PracticeContent />
+    </RouteGuard>
   );
 }

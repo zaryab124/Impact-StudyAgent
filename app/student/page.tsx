@@ -19,8 +19,9 @@ import {
   FileCheck2,
   Layers,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function StudentPage() {
+function StudentPageContent() {
   // Step selections for Curriculum Explorer
   const [selectedBoardId, setSelectedBoardId] = useState<string>("");
   const [selectedYearId, setSelectedYearId] = useState<string>("");
@@ -541,5 +542,13 @@ export default function StudentPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function StudentPage() {
+  return (
+    <RouteGuard allowedRoles={["STUDENT", "ADMIN"]} portalName="Student Portal">
+      <StudentPageContent />
+    </RouteGuard>
   );
 }

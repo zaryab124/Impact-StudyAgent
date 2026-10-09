@@ -30,8 +30,15 @@ export class AuthGuard {
       if (user) return user;
     }
 
-    // Role-header fallback for automated internal / integration testing
-    if (roleHeader) {
+    // Check session cookie if present
+    const sessionCookie = req.cookies.get("session_token")?.value;
+    if (sessionCookie) {
+      const user = await ServerAuthService.authenticateSession(sessionCookie);
+      if (user) return user;
+    }
+
+    // Role-header fallback for automated internal / integration testing only
+    if (process.env.NODE_ENV === "test" && roleHeader) {
       return {
         id: userIdHeader || `${roleHeader.toLowerCase()}-user-id`,
         email: `${roleHeader.toLowerCase()}@examinations.gov.pk`,
@@ -39,13 +46,6 @@ export class AuthGuard {
         role: roleHeader,
         isActive: true,
       };
-    }
-
-    // Check session cookie if present
-    const sessionCookie = req.cookies.get("session_token")?.value;
-    if (sessionCookie) {
-      const user = await ServerAuthService.authenticateSession(sessionCookie);
-      if (user) return user;
     }
 
     return null;

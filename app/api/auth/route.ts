@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
     const email = parsed.data.email.toLowerCase().trim();
     const password = parsed.data.password;
 
-    // 1. Check PostgreSQL Database first (includes Parents, Students, Organizations)
+    // 1. Authenticate with real database credentials (Students, Parents, Organizations, Administrators)
     try {
       const dbAuth = await SubscriptionService.authenticateWithDb(email, password);
       if (dbAuth) {
@@ -183,57 +183,29 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (dbErr) {
-      console.warn("DB authentication lookup failed, checking fallbacks:", dbErr);
+      console.warn("DB authentication lookup failed:", dbErr);
     }
 
-    // 2. Fallbacks for system admin and development roles
-    let role: UserRole = "STUDENT";
-    let name = "Student User";
-    let userId = `usr_${email.replace(/[^a-z0-9]/g, "_")}`;
-    let subscriptionStatus: "ACTIVE" | "PENDING_APPROVAL" = "ACTIVE";
-
-    if (email.includes("admin")) {
-      role = "ADMIN";
-      name = "Chief Academic Administrator";
-      userId = "admin-user-id";
-    } else if (email.includes("officer")) {
-      role = "CURRICULUM_OFFICER";
-      name = "Curriculum Officer";
-      userId = "officer-user-id";
-    } else if (email.includes("teacher")) {
-      role = "TEACHER";
-      name = "Senior Faculty";
-      userId = "teacher-user-id";
-    } else if (email.includes("examiner")) {
-      role = "EXAMINER";
-      name = "Examination Officer";
-      userId = "examiner-user-id";
-    } else if (email.includes("parent")) {
-      role = "PARENT";
-      name = "Student Parent / Guardian";
-      userId = `parent_${Date.now()}`;
-    } else if (email.includes("org")) {
-      role = "ORGANIZATION";
-      name = "Educational Institution";
-      userId = `org_${Date.now()}`;
+    // 2. In isolated unit test environments only: fallback to test memory users
+    if (process.env.NODE_ENV === "test") {
+      const memoryUsers = Array.from((ServerAuthService as any).memoryUsers?.values() || []);
+      const testUser = memoryUsers.find((u: any) => u.email.toLowerCase() === email);
+      if (testUser) {
+        const token = ServerAuthService.createSession(testUser as any);
+        return apiSuccess({
+          message: "Authentication successful (Test Environment).",
+          token,
+          user: testUser,
+        });
+      }
     }
 
-    const user: AuthenticatedUser = {
-      id: userId,
-      email: parsed.data.email,
-      name,
-      role,
-      isActive: true,
-      subscriptionStatus,
-    };
-
-    const token = ServerAuthService.createSession(user);
-
-    return apiSuccess({
-      message: "Authentication successful.",
-      token,
-      user,
-    });
+    // 3. Strict authentic rejection - no demo bypasses allowed
+    return apiError(
+      "Invalid email/username or password. Please check your credentials or register an account.",
+      "INVALID_CREDENTIALS",
+      401
+    );
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Internal error";
     return apiError(message, "AUTH_ERROR", 500);

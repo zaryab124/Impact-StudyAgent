@@ -14,6 +14,7 @@ import {
   FileCheck2,
   Sparkles,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
 const BOARDS = [
   { code: "BISE_LHR", name: "BISE Lahore (Punjab)" },
@@ -82,7 +83,7 @@ const SUBJECTS_BY_GROUP: Record<string, { code: string; name: string }[]> = {
   ],
 };
 
-export default function CreateOrgExamPage() {
+function CreateOrgExamContent() {
   const router = useRouter();
 
   const [title, setTitle] = useState("Midterm Institutional Assessment 2025");
@@ -356,5 +357,13 @@ export default function CreateOrgExamPage() {
         </form>
       )}
     </div>
+  );
+}
+
+export default function CreateOrgExamPage() {
+  return (
+    <RouteGuard allowedRoles={["ORGANIZATION", "ADMIN"]} portalName="Organization Portal">
+      <CreateOrgExamContent />
+    </RouteGuard>
   );
 }

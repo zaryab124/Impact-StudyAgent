@@ -11,7 +11,9 @@ import { prisma } from "@/lib/db";
 export interface SessionTokenPayload {
   userId: string;
   email: string;
+  name?: string;
   role: UserRole;
+  subscriptionStatus?: string;
   expiresAt: number;
 }
 
@@ -27,6 +29,7 @@ export class ServerAuthService {
       name: "Chief Academic Administrator",
       role: "ADMIN",
       isActive: true,
+      subscriptionStatus: "ACTIVE",
     });
     this.memoryUsers.set("officer-user-id", {
       id: "officer-user-id",
@@ -34,6 +37,7 @@ export class ServerAuthService {
       name: "Federal Curriculum Officer",
       role: "CURRICULUM_OFFICER",
       isActive: true,
+      subscriptionStatus: "ACTIVE",
     });
     this.memoryUsers.set("teacher-user-id", {
       id: "teacher-user-id",
@@ -41,6 +45,7 @@ export class ServerAuthService {
       name: "Senior Physics Faculty",
       role: "TEACHER",
       isActive: true,
+      subscriptionStatus: "ACTIVE",
     });
     this.memoryUsers.set("student-user-id", {
       id: "student-user-id",
@@ -48,11 +53,12 @@ export class ServerAuthService {
       name: "Candidate 2025-SSC-09",
       role: "STUDENT",
       isActive: true,
+      subscriptionStatus: "ACTIVE",
     });
   }
 
   /**
-   * Generates a cryptographically strong session token.
+   * Generates a cryptographically hashed session token.
    */
   public static createSession(user: AuthenticatedUser, durationSeconds: number = 86400): string {
     const rawToken = randomUUID();
@@ -61,7 +67,9 @@ export class ServerAuthService {
     this.activeSessions.set(tokenHash, {
       userId: user.id,
       email: user.email,
+      name: user.name,
       role: user.role,
+      subscriptionStatus: user.subscriptionStatus || "ACTIVE",
       expiresAt: Date.now() + durationSeconds * 1000,
     });
 
@@ -94,10 +102,31 @@ export class ServerAuthService {
       return null;
     }
 
-    // Try finding user in DB or memory
+    // Try finding user in memory
     const user = this.memoryUsers.get(session.userId);
     if (user && user.isActive) {
       return user;
+    }
+
+    // Database lookup fallback
+    try {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: session.userId },
+      });
+      if (dbUser && dbUser.isActive) {
+        const authUser: AuthenticatedUser = {
+          id: dbUser.id,
+          email: dbUser.email,
+          name: dbUser.name,
+          role: dbUser.role as UserRole,
+          isActive: dbUser.isActive,
+          subscriptionStatus: dbUser.subscriptionStatus as any,
+        };
+        this.memoryUsers.set(authUser.id, authUser);
+        return authUser;
+      }
+    } catch {
+      // DB unavailable or in test mock
     }
 
     return null;

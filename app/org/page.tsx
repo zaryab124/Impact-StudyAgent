@@ -15,8 +15,9 @@ import {
   Download,
   BookOpen,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function OrganizationDashboardPage() {
+function OrganizationDashboardContent() {
   const [loading, setLoading] = useState(true);
   const [testSeries, setTestSeries] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -160,5 +161,13 @@ export default function OrganizationDashboardPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function OrganizationDashboardPage() {
+  return (
+    <RouteGuard allowedRoles={["ORGANIZATION", "ADMIN"]} portalName="Organization Portal">
+      <OrganizationDashboardContent />
+    </RouteGuard>
   );
 }

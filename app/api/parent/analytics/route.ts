@@ -5,15 +5,23 @@ import { SubscriptionService } from "@/server/subscription/subscription-service"
 import { prisma } from "@/lib/db";
 
 export async function GET(req: NextRequest) {
-  // Allow PARENT or ADMIN or role headers in test
-  const user = await AuthGuard.authenticate(req);
+  // Require PARENT or ADMIN role
+  const auth = await AuthGuard.requireRole(req, ["PARENT", "ADMIN"], {
+    requireActiveSubscription: false,
+  });
+
+  if (!auth.authorized || !auth.user) {
+    return auth.response!;
+  }
+
+  const user = auth.user;
   const studentIdParam = req.nextUrl.searchParams.get("studentId");
 
   try {
     let targetStudentId = studentIdParam;
 
-    if (user && user.role === "PARENT") {
-      // Find the student linked to this parent
+    if (user.role === "PARENT") {
+      // Find the student linked to this verified parent
       const link = await prisma.parentStudentLink.findFirst({
         where: { parentId: user.id },
       });
@@ -22,7 +30,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // If still no studentId, find the first student in the database or fallback
+    // If still no studentId, find the first student in the database or fallback for admin oversight
     if (!targetStudentId) {
       const firstStudent = await prisma.user.findFirst({
         where: { role: "STUDENT" },
@@ -34,12 +42,19 @@ export async function GET(req: NextRequest) {
     const analytics = await SubscriptionService.getStudentAnalytics(targetStudentId);
 
     return apiSuccess({
-      parent: user
-        ? { id: user.id, name: user.name, email: user.email, role: user.role }
-        : { id: "parent_guest", name: "Student Guardian", role: "PARENT" },
+      parent: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
       analytics,
     });
   } catch (error: any) {
-    return apiError(error.message || "Failed to load parent analytics", "PARENT_ANALYTICS_ERROR", 500);
+    return apiError(
+      error.message || "Failed to load parent analytics",
+      "PARENT_ANALYTICS_ERROR",
+      500
+    );
   }
 }

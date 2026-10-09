@@ -17,8 +17,9 @@ import {
   Sparkles,
   HelpCircle,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function ParentPortalPage() {
+function ParentPortalContent() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -294,5 +295,13 @@ export default function ParentPortalPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function ParentPortalPage() {
+  return (
+    <RouteGuard allowedRoles={["PARENT", "ADMIN"]} portalName="Parent Portal">
+      <ParentPortalContent />
+    </RouteGuard>
   );
 }

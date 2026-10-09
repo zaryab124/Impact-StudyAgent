@@ -11,6 +11,7 @@ import {
   HelpCircle,
   Award,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
 interface WeakAreaItem {
   id: string;
@@ -21,7 +22,7 @@ interface WeakAreaItem {
   totalQuestions: number;
 }
 
-export default function WeakAreasPage() {
+function WeakAreasContent() {
   const [loading, setLoading] = useState(true);
   const [topics, setTopics] = useState<WeakAreaItem[]>([]);
 
@@ -222,5 +223,13 @@ export default function WeakAreasPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function WeakAreasPage() {
+  return (
+    <RouteGuard allowedRoles={["STUDENT", "ADMIN"]} portalName="Weak Areas">
+      <WeakAreasContent />
+    </RouteGuard>
   );
 }

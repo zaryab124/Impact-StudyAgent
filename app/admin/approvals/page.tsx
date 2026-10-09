@@ -16,8 +16,9 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 
-export default function AdminApprovalsPage() {
+function AdminApprovalsContent() {
   const [loading, setLoading] = useState(true);
   const [approvals, setApprovals] = useState<any[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -28,9 +29,10 @@ export default function AdminApprovalsPage() {
     try {
       setLoading(true);
       setError(null);
+      const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
       const res = await fetch("/api/admin/approvals", {
         headers: {
-          "x-user-role": "ADMIN",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       const data = await res.json();
@@ -52,11 +54,12 @@ export default function AdminApprovalsPage() {
   const handleAction = async (subscriptionId: string, action: "APPROVE" | "REJECT") => {
     setActionLoading(subscriptionId);
     try {
+      const token = typeof window !== "undefined" ? localStorage.getItem("session_token") : null;
       const res = await fetch("/api/admin/approvals", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-user-role": "ADMIN",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ subscriptionId, action }),
       });
@@ -292,5 +295,13 @@ export default function AdminApprovalsPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminApprovalsPage() {
+  return (
+    <RouteGuard allowedRoles={["ADMIN", "CURRICULUM_OFFICER"]} portalName="Approvals Gate">
+      <AdminApprovalsContent />
+    </RouteGuard>
   );
 }
