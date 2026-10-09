@@ -1,4 +1,3 @@
-import { PDFParse } from "pdf-parse";
 import { PageExtractionStatus, ExtractionMethod } from "@/types/knowledge";
 
 export interface ExtractedPageResult {
@@ -27,6 +26,8 @@ export class PageExtractor {
     const pages: ExtractedPageResult[] = [];
 
     try {
+      const pdfModule = await import("pdf-parse");
+      const PDFParse = pdfModule.PDFParse || (pdfModule as any).default || pdfModule;
       const parser = new PDFParse({ data: new Uint8Array(pdfBuffer) });
       const textResult = await parser.getText();
       await parser.destroy();

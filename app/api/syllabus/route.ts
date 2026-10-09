@@ -15,13 +15,25 @@ export async function GET(req: NextRequest) {
     const subjectId = searchParams.get("subjectId") || undefined;
     const status = (searchParams.get("status") as SyllabusStatus) || undefined;
 
-    const syllabi = await EducationService.getSyllabi(
+    let syllabi = await EducationService.getSyllabi(
       subjectId,
       academicYearId,
       status,
       boardId,
       classId
     );
+
+    if (syllabi.length === 0 && !subjectId && !classId) {
+      const { BootstrapService } = await import("@/server/admin/bootstrap-service");
+      await BootstrapService.ensureBaselineData();
+      syllabi = await EducationService.getSyllabi(
+        subjectId,
+        academicYearId,
+        status,
+        boardId,
+        classId
+      );
+    }
 
     const serialized = syllabi.map((s) => {
       const anyS = s as any;

@@ -129,6 +129,30 @@ export default function AdminBlueprintsPage() {
       (!selectedClass || b.classId === selectedClass)
   );
 
+  // Dynamically update blueprint title when Subject/Class changes
+  useEffect(() => {
+    if (selectedSubject) {
+      const s = subjects.find((sub) => sub.id === selectedSubject);
+      const c = classes.find((cls) => cls.id === selectedClass);
+      const b = boards.find((brd) => brd.id === selectedBoard);
+      const sName = s?.name || "Examination";
+      const cName = c?.name ? ` (${c.name})` : "";
+      const bCode = b?.code ? ` [${b.code}]` : "";
+      setTitle(`${sName}${cName}${bCode} Blueprint 2025`);
+    }
+  }, [selectedSubject, selectedClass, selectedBoard, subjects, classes, boards]);
+
+  // Auto-select first matching syllabus when subject/class changes
+  useEffect(() => {
+    if (availableSyllabi.length > 0) {
+      if (!selectedSyllabus || !availableSyllabi.some((s) => s.id === selectedSyllabus)) {
+        setSelectedSyllabus(availableSyllabi[0].id);
+      }
+    } else {
+      setSelectedSyllabus("");
+    }
+  }, [selectedSubject, selectedClass, syllabi]);
+
   // Difficulty presets
   const applyDifficultyPreset = (easy: number, med: number, diff: number) => {
     setEasyPct(easy);
@@ -144,14 +168,14 @@ export default function AdminBlueprintsPage() {
 
     try {
       const payload = {
-        boardId: selectedBoard || "board-fed-01",
-        academicYearId: selectedYear || "year-2024-25",
-        classId: selectedClass || "class-grade-9",
-        subjectId: selectedSubject || "subj-physics",
-        syllabusId: selectedSyllabus || "syl-physics-2025",
-        bookId: selectedBook || undefined,
+        boardId: selectedBoard || (boards[0]?.id || "board-fed-01"),
+        academicYearId: selectedYear || (years[0]?.id || "year-2024-25"),
+        classId: selectedClass || (classes[0]?.id || "class-grade-9"),
+        subjectId: selectedSubject || (subjects[0]?.id || "sub-phy-9"),
+        syllabusId: selectedSyllabus || (availableSyllabi[0]?.id || "syl-verified-curriculum"),
+        bookId: selectedBook || (availableBooks[0]?.id || undefined),
         patternId: selectedPattern || undefined,
-        title,
+        title: title.trim() || "Annual Examination Blueprint 2025",
         totalMarks: Number(totalMarks),
         durationMinutes: Number(durationMinutes),
         requestedDifficultyDistribution: {
@@ -175,10 +199,12 @@ export default function AdminBlueprintsPage() {
         throw new Error(json.error?.message || "Failed to generate examination blueprint.");
       }
 
-      setActiveBlueprint(json.data);
+      const created = json.data;
+      setActiveBlueprint(created);
+      setBlueprintsList((prev) => [created, ...prev.filter((b) => b.id !== created.id)]);
       setFeedback({
         type: "success",
-        message: `Blueprint "${json.data.title}" (${json.data.version}) created and mathematically validated!`,
+        message: `Blueprint "${created.title}" (${created.version}) created and mathematically validated!`,
       });
       loadInitialData();
     } catch (err: any) {
@@ -198,7 +224,9 @@ export default function AdminBlueprintsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error?.message || "Review transition failed");
-      setActiveBlueprint(json.data);
+      const updated = json.data;
+      setActiveBlueprint(updated);
+      setBlueprintsList((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
       setFeedback({ type: "success", message: "Blueprint transitioned to UNDER_REVIEW." });
     } catch (err: any) {
       setFeedback({ type: "error", message: err.message });
@@ -214,7 +242,9 @@ export default function AdminBlueprintsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error?.message || "Approval failed");
-      setActiveBlueprint(json.data);
+      const updated = json.data;
+      setActiveBlueprint(updated);
+      setBlueprintsList((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
       setFeedback({ type: "success", message: "Blueprint APPROVED! Ready for Phase 8 generation." });
     } catch (err: any) {
       setFeedback({ type: "error", message: err.message });
@@ -235,6 +265,7 @@ export default function AdminBlueprintsPage() {
       if (!res.ok) throw new Error(json.error?.message || "Version creation failed");
       const nextBp = json.data.blueprint || json.data;
       setActiveBlueprint(nextBp);
+      setBlueprintsList((prev) => [nextBp, ...prev.filter((b) => b.id !== nextBp.id)]);
       setFeedback({
         type: "success",
         message: `Created new blueprint version ${nextBp.version}!`,
@@ -254,7 +285,9 @@ export default function AdminBlueprintsPage() {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error?.message || "Archive failed");
-      setActiveBlueprint(json.data);
+      const updated = json.data;
+      setActiveBlueprint(updated);
+      setBlueprintsList((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
       setFeedback({ type: "warning", message: "Blueprint ARCHIVED." });
     } catch (err: any) {
       setFeedback({ type: "error", message: err.message });
@@ -454,7 +487,11 @@ export default function AdminBlueprintsPage() {
                   onChange={(e) => setSelectedSyllabus(e.target.value)}
                   className="w-full rounded-md border border-slate-700 bg-slate-950 px-2.5 py-1.5 text-xs text-white focus:border-amber-500 focus:outline-none"
                 >
-                  <option value="">Select Verified Syllabus</option>
+                  <option value="">
+                    {availableSyllabi.length > 0
+                      ? "Select Verified Syllabus (or Default)"
+                      : "Standard Verified Syllabus (Auto-Selected)"}
+                  </option>
                   {availableSyllabi.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.title || "Syllabus"} ({s.version}) [{s.status}]

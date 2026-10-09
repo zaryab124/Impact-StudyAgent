@@ -84,6 +84,8 @@ export default function AdminPage() {
     setLoading(true);
     setFeedback(null);
     try {
+      await fetch("/api/admin/bootstrap", { method: "POST" }).catch(() => {});
+
       const [bRes, yRes, cRes, sRes, bkRes, sylRes] = await Promise.all([
         fetch("/api/boards").then((r) => r.json()),
         fetch("/api/academic-years").then((r) => r.json()),

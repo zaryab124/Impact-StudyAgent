@@ -24,37 +24,73 @@ export class BlueprintRepository {
 
     if (process.env.NODE_ENV !== "test") {
       try {
-        // Attempt upsert to Prisma if database is reachable
+        let patternId = blueprint.sourcePatternId || "default-pattern";
+
+        // Ensure referenced PaperPattern exists to satisfy foreign key constraint
+        const existingPattern = await prisma.paperPattern.findUnique({
+          where: { id: patternId },
+          select: { id: true },
+        });
+
+        if (!existingPattern) {
+          // Check if any pattern exists for this subject, or create fallback
+          const subjectPattern = await prisma.paperPattern.findFirst({
+            where: { subjectId: blueprint.subjectId || undefined },
+            select: { id: true },
+          });
+
+          if (subjectPattern) {
+            patternId = subjectPattern.id;
+          } else {
+            // Upsert fallback pattern with default-pattern ID
+            const created = await prisma.paperPattern.upsert({
+              where: { id: "default-pattern" },
+              update: {},
+              create: {
+                id: "default-pattern",
+                subjectId: blueprint.subjectId || "sub-phy-9",
+                title: "Standard Baseline Examination Pattern",
+                totalMarks: blueprint.totalMarks || 75,
+                version: "v1.0",
+                status: "ACTIVE",
+              },
+            });
+            patternId = created.id;
+          }
+        }
+
+        // Persist blueprint with full JSON in sectionSpecs
         await prisma.paperBlueprint.upsert({
           where: { id: blueprint.id },
           create: {
             id: blueprint.id,
-            patternId: blueprint.sourcePatternId || "default-pattern",
+            patternId,
             name: blueprint.title,
             totalMarks: blueprint.totalMarks,
-            totalQuestions: blueprint.slots.length,
+            totalQuestions: blueprint.slots?.length || 0,
             durationMinutes: blueprint.durationMinutes,
-            easyCount: blueprint.difficultyComparison.finalBlueprintDistribution.easyCount,
-            mediumCount: blueprint.difficultyComparison.finalBlueprintDistribution.mediumCount,
-            difficultCount: blueprint.difficultyComparison.finalBlueprintDistribution.difficultCount,
+            easyCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.easyCount ?? 0,
+            mediumCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.mediumCount ?? 0,
+            difficultCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.difficultCount ?? 0,
             chapterDistribution: blueprint.coverageAllocation as any,
-            choiceRules: blueprint.sections.map((s) => s.choiceRule) as any,
-            sectionSpecs: blueprint.sections as any,
+            choiceRules: blueprint.sections?.map((s) => s.choiceRule) as any,
+            sectionSpecs: { fullBlueprint: clone } as any,
           },
           update: {
             name: blueprint.title,
             totalMarks: blueprint.totalMarks,
-            totalQuestions: blueprint.slots.length,
+            totalQuestions: blueprint.slots?.length || 0,
             durationMinutes: blueprint.durationMinutes,
-            easyCount: blueprint.difficultyComparison.finalBlueprintDistribution.easyCount,
-            mediumCount: blueprint.difficultyComparison.finalBlueprintDistribution.mediumCount,
-            difficultCount: blueprint.difficultyComparison.finalBlueprintDistribution.difficultCount,
+            easyCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.easyCount ?? 0,
+            mediumCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.mediumCount ?? 0,
+            difficultCount: blueprint.difficultyComparison?.finalBlueprintDistribution?.difficultCount ?? 0,
             chapterDistribution: blueprint.coverageAllocation as any,
-            sectionSpecs: blueprint.sections as any,
+            choiceRules: blueprint.sections?.map((s) => s.choiceRule) as any,
+            sectionSpecs: { fullBlueprint: clone } as any,
           },
         });
-      } catch {
-        // DB offline or mock environment in test; in-memory store acts as authority
+      } catch (err) {
+        console.warn("[BlueprintRepository] DB persistence warning (in-memory authority preserved):", err);
       }
     }
 
@@ -62,20 +98,41 @@ export class BlueprintRepository {
   }
 
   /**
-   * Retrieves an ExaminationBlueprint by ID.
+   * Retrieves an ExaminationBlueprint by ID with seamless DB fallback for serverless restarts.
    */
   public static async findBlueprintById(
     id: string
   ): Promise<ExaminationBlueprint | null> {
+    if (!id || typeof id !== "string") {
+      return null;
+    }
     const mem = this.memoryBlueprints.get(id);
     if (mem) {
       return JSON.parse(JSON.stringify(mem));
     }
+
+    // Serverless container cold start fallback: fetch from PostgreSQL
+    try {
+      const dbRow = await prisma.paperBlueprint.findUnique({
+        where: { id },
+      });
+
+      if (dbRow) {
+        const full = (dbRow.sectionSpecs as any)?.fullBlueprint;
+        if (full) {
+          this.memoryBlueprints.set(id, full);
+          return JSON.parse(JSON.stringify(full));
+        }
+      }
+    } catch (err) {
+      console.warn("[BlueprintRepository] DB lookup failed, checking in-memory only:", err);
+    }
+
     return null;
   }
 
   /**
-   * Lists all blueprints, optionally filtered.
+   * Lists all blueprints, pulling from DB to survive serverless cold starts.
    */
   public static async listBlueprints(filters: {
     subjectId?: string;
@@ -83,6 +140,21 @@ export class BlueprintRepository {
     boardId?: string;
     status?: string;
   } = {}): Promise<ExaminationBlueprint[]> {
+    try {
+      const dbRows = await prisma.paperBlueprint.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+
+      for (const row of dbRows) {
+        const full = (row.sectionSpecs as any)?.fullBlueprint;
+        if (full && !this.memoryBlueprints.has(full.id)) {
+          this.memoryBlueprints.set(full.id, full);
+        }
+      }
+    } catch (err) {
+      console.warn("[BlueprintRepository] DB list failed, using in-memory only:", err);
+    }
+
     let list = Array.from(this.memoryBlueprints.values());
 
     if (filters.subjectId) {
@@ -102,10 +174,15 @@ export class BlueprintRepository {
   }
 
   /**
-   * Deletes a blueprint from the repository.
+   * Deletes a blueprint from repository and DB.
    */
   public static async deleteBlueprint(id: string): Promise<boolean> {
     const existed = this.memoryBlueprints.delete(id);
+    try {
+      await prisma.paperBlueprint.delete({ where: { id } });
+    } catch {
+      // ignore if not present in DB
+    }
     return existed;
   }
 

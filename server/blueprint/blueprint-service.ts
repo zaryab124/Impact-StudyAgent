@@ -466,7 +466,14 @@ export class BlueprintService {
   public static async listQuestionSpecifications(
     blueprintId?: string
   ): Promise<QuestionSpecification[]> {
-    return await BlueprintRepository.listSpecifications(blueprintId);
+    let list = await BlueprintRepository.listSpecifications(blueprintId);
+    if ((!list || list.length === 0) && blueprintId) {
+      const bp = await this.getBlueprint(blueprintId);
+      if (bp && bp.slots && bp.slots.length > 0) {
+        list = await this.createQuestionSpecifications(blueprintId);
+      }
+    }
+    return list;
   }
 
   /**

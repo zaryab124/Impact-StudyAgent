@@ -18,7 +18,6 @@ import { DifficultyAnalyzer } from "./difficulty-analyzer";
 import { SampleCurriculumMapper } from "./sample-curriculum-mapper";
 import { MarksArithmeticEngine } from "./marks-arithmetic-engine";
 import { QualityReporter } from "./quality-reporter";
-import { PageExtractor } from "@/server/book-intelligence/page-extractor";
 
 export interface CreateSamplePaperInput {
   title: string;
@@ -153,6 +152,7 @@ export class SamplePaperService {
     if (pageTexts.length === 0 && paper.storagePath && fs.existsSync(paper.storagePath)) {
       try {
         const fileBuf = fs.readFileSync(paper.storagePath);
+        const { PageExtractor } = await import("@/server/book-intelligence/page-extractor");
         const extracted = await PageExtractor.extractPagesFromPdf(fileBuf);
         pageTexts = extracted.map((ep) => ({ pageNumber: ep.pageNumber, text: ep.rawText }));
       } catch (err: unknown) {
@@ -553,8 +553,8 @@ export class SamplePaperService {
       arithmeticValidation: p.arithmeticValidation as any,
       qualityReport: p.qualityReport as any,
       processingLogs: p.processingLogs as any,
-      createdAt: p.createdAt.toISOString(),
-      updatedAt: p.updatedAt.toISOString(),
+      createdAt: p.createdAt ? new Date(p.createdAt).toISOString() : new Date().toISOString(),
+      updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : new Date().toISOString(),
     }));
   }
 
