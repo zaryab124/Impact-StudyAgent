@@ -56,7 +56,8 @@ export class AuthGuard {
    */
   public static async requireRole(
     req: NextRequest,
-    allowedRoles: UserRole[]
+    allowedRoles: UserRole[],
+    options: { requireActiveSubscription?: boolean } = { requireActiveSubscription: true }
   ): Promise<AuthGuardResult> {
     const user = await this.authenticate(req);
 
@@ -75,6 +76,22 @@ export class AuthGuard {
         response: apiError(
           `Forbidden: Role "${user.role}" is not authorized for this resource. Required roles: ${allowedRoles.join(", ")}.`,
           "FORBIDDEN",
+          403
+        ),
+      };
+    }
+
+    if (
+      options.requireActiveSubscription !== false &&
+      (user.role === "STUDENT" || user.role === "ORGANIZATION") &&
+      user.subscriptionStatus === "PENDING_APPROVAL"
+    ) {
+      return {
+        authorized: false,
+        user,
+        response: apiError(
+          "Account pending approval: Your registration payment receipt is currently under administrator review. Access will be activated upon approval.",
+          "PENDING_APPROVAL",
           403
         ),
       };

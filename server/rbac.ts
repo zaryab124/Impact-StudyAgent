@@ -31,6 +31,18 @@ const ROLE_PERMISSIONS_MAP: Record<UserRole, Set<Permission>> = {
     Permission.VALIDATE_QUESTION,
     Permission.VIEW_ALL_RESULTS,
   ]),
+  PARENT: new Set([
+    Permission.READ_CURRICULUM,
+    Permission.VIEW_CHILD_ANALYTICS,
+    Permission.VIEW_OWN_RESULT,
+  ]),
+  ORGANIZATION: new Set([
+    Permission.READ_CURRICULUM,
+    Permission.CREATE_BLUEPRINT,
+    Permission.GENERATE_PAPER,
+    Permission.MANAGE_ORG_TEST_SERIES,
+    Permission.VIEW_ALL_RESULTS,
+  ]),
   ADMIN: new Set(Object.values(Permission)),
 };
 

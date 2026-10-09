@@ -15,6 +15,9 @@ import {
   RotateCcw,
   HelpCircle,
   Award,
+  Upload,
+  FileText,
+  Camera,
 } from "lucide-react";
 
 export default function StudentExamPlayerPage() {
@@ -499,31 +502,155 @@ export default function StudentExamPlayerPage() {
                   </div>
                 )}
 
-                {/* 3. Subjective / Short Answer / Long Answer Textarea */}
+                {/* 3. Subjective / Short Answer / Long Answer with Dual Mode (Type OR Upload Handwritten Paper) */}
                 {currentQuestion.questionType !== "MCQ" && currentQuestion.questionType !== "NUMERICAL" && (
-                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                        Your Detailed Solution / Response:
-                      </label>
-                      <span className="text-[11px] text-slate-500">
-                        {currentAnswer.answerText?.length || 0} characters
-                      </span>
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-5 space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                          Short / Long Answer Submission Mode:
+                        </label>
+                        <p className="text-[11px] text-slate-400">
+                          Choose whether to type your solution directly in app or upload a handwritten sheet / PDF.
+                        </p>
+                      </div>
+
+                      {/* Mode Switcher Tabs */}
+                      <div className="flex items-center rounded-lg bg-slate-950 p-1 border border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerAutosave(currentQuestion.id, {
+                              ...currentAnswer,
+                              answerType: "TYPED",
+                            });
+                          }}
+                          className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+                            currentAnswer.answerType !== "UPLOADED_SCAN"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          <FileText className="h-3 w-3" />
+                          <span>Type in App</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            triggerAutosave(currentQuestion.id, {
+                              ...currentAnswer,
+                              answerType: "UPLOADED_SCAN",
+                            });
+                          }}
+                          className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold transition-all ${
+                            currentAnswer.answerType === "UPLOADED_SCAN"
+                              ? "bg-indigo-600 text-white shadow"
+                              : "text-slate-400 hover:text-slate-200"
+                          }`}
+                        >
+                          <Upload className="h-3 w-3" />
+                          <span>Upload Handwritten Sheet</span>
+                        </button>
+                      </div>
                     </div>
-                    <textarea
-                      rows={8}
-                      placeholder="Type your structured explanation, derivation, or answer points here..."
-                      value={currentAnswer.answerText || ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        triggerAutosave(currentQuestion.id, {
-                          ...currentAnswer,
-                          answerText: val,
-                          isAnswered: val.trim().length > 0,
-                        });
-                      }}
-                      className="mt-3 w-full rounded-lg border border-slate-700 bg-slate-950 p-4 text-sm leading-relaxed text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
-                    />
+
+                    {currentAnswer.answerType === "UPLOADED_SCAN" ? (
+                      /* Mode B: Scanned Paper / Screenshot / PDF Upload */
+                      <div className="space-y-3">
+                        <div className="flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-700 bg-slate-950/70 p-6 text-center hover:border-indigo-500 transition-colors">
+                          <Camera className="h-8 w-8 text-indigo-400 mb-2" />
+                          <p className="text-xs font-semibold text-slate-200">
+                            Upload Photo of Handwritten Paper, Notebook, or PDF
+                          </p>
+                          <p className="text-[11px] text-slate-400 mt-1 max-w-sm">
+                            Write your answer clearly on paper, take a photo or scan as PDF, and attach here for AI rubric evaluation.
+                          </p>
+
+                          <input
+                            type="file"
+                            accept="image/*,application/pdf"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                const file = e.target.files[0];
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                  const base64Data = ev.target?.result as string;
+                                  triggerAutosave(currentQuestion.id, {
+                                    ...currentAnswer,
+                                    answerType: "UPLOADED_SCAN",
+                                    attachmentUrl: base64Data,
+                                    answerText: `[Handwritten Paper Attached: ${file.name}]`,
+                                    isAnswered: true,
+                                  });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="mt-3 text-xs text-slate-400 file:mr-3 file:rounded-lg file:border-0 file:bg-indigo-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-indigo-500"
+                          />
+                        </div>
+
+                        {currentAnswer.attachmentUrl && (
+                          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-xs text-emerald-300">
+                              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                              <span className="font-semibold">
+                                {currentAnswer.answerText || "Handwritten response attached"}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-emerald-400 font-mono">Ready for Evaluation</span>
+                          </div>
+                        )}
+
+                        <div className="pt-1">
+                          <label className="block text-[11px] font-medium text-slate-400 mb-1">
+                            Additional Text / Working Notes (Optional):
+                          </label>
+                          <textarea
+                            rows={3}
+                            placeholder="Optional notes or transcription to assist examiner..."
+                            value={currentAnswer.answerText?.startsWith("[Handwritten") ? "" : currentAnswer.answerText || ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              triggerAutosave(currentQuestion.id, {
+                                ...currentAnswer,
+                                answerText: val || currentAnswer.answerText,
+                                isAnswered: true,
+                              });
+                            }}
+                            className="w-full rounded-lg border border-slate-800 bg-slate-950 p-3 text-xs text-slate-200 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      /* Mode A: In-App Typed Solution */
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-medium text-slate-400">
+                            Type your full explanation, mathematical derivation, or headings:
+                          </span>
+                          <span className="text-[11px] text-slate-500 font-mono">
+                            {currentAnswer.answerText?.length || 0} characters
+                          </span>
+                        </div>
+                        <textarea
+                          rows={8}
+                          placeholder="Type your structured explanation, derivation, or answer points here..."
+                          value={currentAnswer.answerText || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            triggerAutosave(currentQuestion.id, {
+                              ...currentAnswer,
+                              answerType: "TYPED",
+                              answerText: val,
+                              isAnswered: val.trim().length > 0,
+                            });
+                          }}
+                          className="w-full rounded-lg border border-slate-700 bg-slate-950 p-4 text-sm leading-relaxed text-slate-100 placeholder-slate-600 focus:border-indigo-500 focus:outline-none"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

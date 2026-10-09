@@ -1,4 +1,11 @@
-export type UserRole = "STUDENT" | "TEACHER" | "EXAMINER" | "CURRICULUM_OFFICER" | "ADMIN";
+export type UserRole =
+  | "STUDENT"
+  | "TEACHER"
+  | "EXAMINER"
+  | "CURRICULUM_OFFICER"
+  | "ADMIN"
+  | "PARENT"
+  | "ORGANIZATION";
 
 export enum Permission {
   READ_CURRICULUM = "READ_CURRICULUM",
@@ -17,6 +24,9 @@ export enum Permission {
   MANAGE_AI_CONFIG = "MANAGE_AI_CONFIG",
   VIEW_SYSTEM_HEALTH = "VIEW_SYSTEM_HEALTH",
   EXECUTE_BACKGROUND_JOBS = "EXECUTE_BACKGROUND_JOBS",
+  VIEW_CHILD_ANALYTICS = "VIEW_CHILD_ANALYTICS",
+  MANAGE_ORG_TEST_SERIES = "MANAGE_ORG_TEST_SERIES",
+  MANAGE_SUBSCRIPTIONS = "MANAGE_SUBSCRIPTIONS",
 }
 
 export interface AuthenticatedUser {
@@ -25,9 +35,13 @@ export interface AuthenticatedUser {
   name: string;
   role: UserRole;
   isActive: boolean;
+  subscriptionStatus?: "PENDING_APPROVAL" | "ACTIVE" | "REJECTED" | "EXPIRED";
+  organizationId?: string;
+  organizationName?: string;
 }
 
 export interface SessionContext {
   user: AuthenticatedUser | null;
   isAuthenticated: boolean;
 }
+

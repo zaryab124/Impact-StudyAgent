@@ -81,11 +81,39 @@ const DEFAULT_CLASSES = [
     numericLevel: 9,
     status: "ACTIVE",
     academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025", boardId: "board-fed-01" },
-    _count: { subjects: 4, books: 4 },
+    _count: { subjects: 5, books: 5 },
+  },
+  {
+    id: "class-10",
+    academicYearId: "year-current",
+    name: "Class 10 (SSC Part-II)",
+    numericLevel: 10,
+    status: "ACTIVE",
+    academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025", boardId: "board-fed-01" },
+    _count: { subjects: 5, books: 5 },
+  },
+  {
+    id: "class-11",
+    academicYearId: "year-current",
+    name: "1st Year / Class 11 (HSSC Part-I)",
+    numericLevel: 11,
+    status: "ACTIVE",
+    academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025", boardId: "board-fed-01" },
+    _count: { subjects: 5, books: 5 },
+  },
+  {
+    id: "class-12",
+    academicYearId: "year-current",
+    name: "2nd Year / Class 12 (HSSC Part-II)",
+    numericLevel: 12,
+    status: "ACTIVE",
+    academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025", boardId: "board-fed-01" },
+    _count: { subjects: 5, books: 5 },
   },
 ];
 
 const DEFAULT_SUBJECTS = [
+  // Class 9 (SSC Part-I)
   {
     id: "subj-physics",
     classId: "class-9",
@@ -120,6 +148,156 @@ const DEFAULT_SUBJECTS = [
     code: "MTH-09",
     status: "ACTIVE",
     class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-cs-09",
+    classId: "class-9",
+    name: "Computer Science",
+    code: "CS-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+
+  // Class 10 (SSC Part-II)
+  {
+    id: "subj-physics-10",
+    classId: "class-10",
+    name: "Physics",
+    code: "PHY-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-chemistry-10",
+    classId: "class-10",
+    name: "Chemistry",
+    code: "CHM-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-biology-10",
+    classId: "class-10",
+    name: "Biology",
+    code: "BIO-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-math-10",
+    classId: "class-10",
+    name: "Mathematics",
+    code: "MTH-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-cs-10",
+    classId: "class-10",
+    name: "Computer Science",
+    code: "CS-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+
+  // 1st Year / Class 11 (Intermediate)
+  {
+    id: "subj-physics-11",
+    classId: "class-11",
+    name: "Physics (Pre-Med / Pre-Eng / ICS)",
+    code: "PHY-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-chemistry-11",
+    classId: "class-11",
+    name: "Chemistry (Pre-Med / Pre-Eng)",
+    code: "CHM-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-biology-11",
+    classId: "class-11",
+    name: "Biology (FSc Pre-Medical)",
+    code: "BIO-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-math-11",
+    classId: "class-11",
+    name: "Mathematics (Pre-Eng / ICS)",
+    code: "MTH-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-cs-11",
+    classId: "class-11",
+    name: "Computer Science (ICS)",
+    code: "CS-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+
+  // 2nd Year / Class 12 (Intermediate)
+  {
+    id: "subj-physics-12",
+    classId: "class-12",
+    name: "Physics (Pre-Med / Pre-Eng / ICS)",
+    code: "PHY-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-chemistry-12",
+    classId: "class-12",
+    name: "Chemistry (Pre-Med / Pre-Eng)",
+    code: "CHM-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-biology-12",
+    classId: "class-12",
+    name: "Biology (FSc Pre-Medical)",
+    code: "BIO-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-math-12",
+    classId: "class-12",
+    name: "Mathematics (Pre-Eng / ICS)",
+    code: "MTH-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-cs-12",
+    classId: "class-12",
+    name: "Computer Science (ICS)",
+    code: "CS-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
     _count: { books: 1, samplePapers: 1 },
   },
 ];
@@ -378,8 +556,16 @@ export class EducationService {
         },
       });
       if (res && res.length > 0) return res;
+      if (classId) {
+        const filtered = DEFAULT_SUBJECTS.filter((s) => s.classId === classId);
+        return filtered.length > 0 ? (filtered as any) : (DEFAULT_SUBJECTS as any);
+      }
       return DEFAULT_SUBJECTS as any;
     } catch {
+      if (classId) {
+        const filtered = DEFAULT_SUBJECTS.filter((s) => s.classId === classId);
+        return filtered.length > 0 ? (filtered as any) : (DEFAULT_SUBJECTS as any);
+      }
       return DEFAULT_SUBJECTS as any;
     }
   }
@@ -449,9 +635,59 @@ export class EducationService {
         },
       });
       if (res && res.length > 0) return res;
-      return (subjectId ? DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId) : DEFAULT_BOOKS) as any;
+      if (subjectId) {
+        const matches = DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId);
+        if (matches.length > 0) return matches as any;
+        const subj = DEFAULT_SUBJECTS.find((s) => s.id === subjectId);
+        return [
+          {
+            id: `book-${subjectId}`,
+            title: `${subj ? subj.name : "Core"} Textbook (Official Board Curriculum)`,
+            edition: "2024-2025 Edition",
+            publisher: "Punjab & Federal Textbook Board",
+            author: "National Curriculum Wing",
+            boardId: "board-fed-01",
+            academicYearId: "year-current",
+            classId: subj?.classId || "class-9",
+            subjectId,
+            version: "2025.1",
+            status: "ACTIVE",
+            subject: subj || { id: subjectId, name: "General Science", code: "SCI" },
+            class: subj?.class || { id: "class-9", name: "Class 9", numericLevel: 9 },
+            board: { id: "board-fed-01", name: "Board of Intermediate and Secondary Education", code: "BISE" },
+            academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+            _count: { chapters: 9 },
+          },
+        ] as any;
+      }
+      return DEFAULT_BOOKS as any;
     } catch {
-      return (subjectId ? DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId) : DEFAULT_BOOKS) as any;
+      if (subjectId) {
+        const matches = DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId);
+        if (matches.length > 0) return matches as any;
+        const subj = DEFAULT_SUBJECTS.find((s) => s.id === subjectId);
+        return [
+          {
+            id: `book-${subjectId}`,
+            title: `${subj ? subj.name : "Core"} Textbook (Official Board Curriculum)`,
+            edition: "2024-2025 Edition",
+            publisher: "Punjab & Federal Textbook Board",
+            author: "National Curriculum Wing",
+            boardId: "board-fed-01",
+            academicYearId: "year-current",
+            classId: subj?.classId || "class-9",
+            subjectId,
+            version: "2025.1",
+            status: "ACTIVE",
+            subject: subj || { id: subjectId, name: "General Science", code: "SCI" },
+            class: subj?.class || { id: "class-9", name: "Class 9", numericLevel: 9 },
+            board: { id: "board-fed-01", name: "Board of Intermediate and Secondary Education", code: "BISE" },
+            academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+            _count: { chapters: 9 },
+          },
+        ] as any;
+      }
+      return DEFAULT_BOOKS as any;
     }
   }
 
@@ -498,10 +734,53 @@ export class EducationService {
           },
         },
       });
-      if (book) return book.chapters;
-      return DEFAULT_CHAPTERS as any;
+      if (book && book.chapters && book.chapters.length > 0) return book.chapters;
+      const matches = DEFAULT_CHAPTERS.filter((c) => c.bookId === bookId);
+      if (matches.length > 0) return matches as any;
+      return Array.from({ length: 8 }, (_, i) => ({
+        id: `chap-${bookId}-${i + 1}`,
+        bookId,
+        chapterNumber: i + 1,
+        title: `Unit ${i + 1}: Core Concepts & Principles`,
+        orderIndex: i + 1,
+        status: "ACTIVE",
+        topics: [
+          {
+            id: `top-${bookId}-${i + 1}-1`,
+            title: `Topic ${i + 1}.1: Foundational Theory`,
+            topicCode: `${i + 1}.1`,
+            orderIndex: 1,
+            status: "ACTIVE",
+          },
+          {
+            id: `top-${bookId}-${i + 1}-2`,
+            title: `Topic ${i + 1}.2: Applied Analysis`,
+            topicCode: `${i + 1}.2`,
+            orderIndex: 2,
+            status: "ACTIVE",
+          },
+        ],
+      })) as any;
     } catch {
-      return DEFAULT_CHAPTERS as any;
+      const matches = DEFAULT_CHAPTERS.filter((c) => c.bookId === bookId);
+      if (matches.length > 0) return matches as any;
+      return Array.from({ length: 8 }, (_, i) => ({
+        id: `chap-${bookId}-${i + 1}`,
+        bookId,
+        chapterNumber: i + 1,
+        title: `Unit ${i + 1}: Core Concepts & Principles`,
+        orderIndex: i + 1,
+        status: "ACTIVE",
+        topics: [
+          {
+            id: `top-${bookId}-${i + 1}-1`,
+            title: `Topic ${i + 1}.1: Foundational Theory`,
+            topicCode: `${i + 1}.1`,
+            orderIndex: 1,
+            status: "ACTIVE",
+          },
+        ],
+      })) as any;
     }
   }
 
