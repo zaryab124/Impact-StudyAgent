@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const testSeries = await prisma.organizationTestSeries.findUnique({
+    const testSeries = await (prisma as any).organizationTestSeries.findUnique({
       where: { id },
       include: {
         organization: true,

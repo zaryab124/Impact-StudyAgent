@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
   try {
     const orgId = auth.user?.organizationId;
 
-    const list = await prisma.organizationTestSeries.findMany({
+    const list = await (prisma as any).organizationTestSeries.findMany({
       where: orgId ? { organizationId: orgId } : undefined,
       include: {
         organization: {
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
       },
     ];
 
-    const testSeries = await prisma.organizationTestSeries.create({
+    const testSeries = await (prisma as any).organizationTestSeries.create({
       data: {
         organizationId,
         title,
