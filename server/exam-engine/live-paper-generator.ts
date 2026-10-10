@@ -26,6 +26,7 @@ import { QuestionBankRepository } from "@/server/question-generation/question-ba
 import { calculateDifficultyDistribution } from "@/lib/blueprint/calculator";
 import { SyllabusGate } from "@/server/retrieval/syllabus-gate";
 import { prisma } from "@/lib/db";
+import { CurriculumQuestionBank, CURRICULUM_QUESTION_REGISTRY } from "@/server/exam-engine/curriculum-question-bank";
 
 export interface LivePaperGenerationConfig {
   boardId: string;
@@ -170,18 +171,28 @@ export class LivePaperGenerator {
 
       const totalMarks = sections.reduce((sum, s) => sum + s.maximumObtainableMarks, 0);
 
-      // Generate question slots
+      // Generate question slots with authentic curriculum topics
       const slots: BlueprintQuestionSlot[] = [];
       let slotSeq = 1;
       const chapterList = (config.chapterIds && config.chapterIds.length > 0)
         ? config.chapterIds
         : ["chap-01", "chap-02", "chap-03"];
 
+      const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId);
+      const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId);
+      const subQuestions = CURRICULUM_QUESTION_REGISTRY.filter(
+        (q) => q.classLevel === normClass && q.subjectKey === normSub
+      );
+
       for (const sec of sections) {
         for (let i = 0; i < sec.questionCount; i++) {
           const chapId = chapterList[(slotSeq - 1) % chapterList.length];
           const diff =
             slotSeq <= dist.easy ? "EASY" : slotSeq <= dist.easy + dist.medium ? "MEDIUM" : "DIFFICULT";
+
+          const subQ = subQuestions.length > 0 ? subQuestions[(slotSeq - 1) % subQuestions.length] : undefined;
+          const chapterTitle = subQ?.chapterTitle || `Chapter ${chapId}`;
+          const topicTitle = subQ?.topicTitle || `${chapterTitle} Core Concepts`;
 
           slots.push({
             id: `slot_${bpId}_${slotSeq}`,
@@ -194,9 +205,9 @@ export class LivePaperGenerator {
             targetDifficulty: diff,
             cognitiveLevel: slotSeq % 2 === 0 ? "UNDERSTAND" : "APPLY",
             chapterId: chapId,
-            chapterTitle: `Chapter ${chapId}`,
+            chapterTitle,
             topicId: `top_${chapId}_${slotSeq}`,
-            topicTitle: `Topic ${chapId}.${slotSeq}`,
+            topicTitle,
             optionalState: "COMPULSORY",
             knowledgeType: "CONCEPTUAL",
             requiredAnswerDepth: "OBJECTIVE",
@@ -212,6 +223,7 @@ export class LivePaperGenerator {
           slotSeq++;
         }
       }
+
 
       blueprint = {
         id: bpId,
@@ -304,8 +316,15 @@ export class LivePaperGenerator {
 
       // If replacement exhausted and still no approved item
       if (!candidateApproved) {
-        // In offline/test environments, create a deterministic grounded candidate matching the slot
-        const fallbackText = `Explain the theoretical principles and practical significance of ${slot.topicTitle || "this topic"} in detail.`;
+        // Retrieve authentic curriculum bank candidate for this exact class and subject
+        const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId);
+        const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId);
+        const bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
+          (q) => q.type === slot.questionType && q.classLevel === normClass && q.subjectKey === normSub
+        );
+        const bankMatch = bankItems[(slot.sequence - 1) % Math.max(1, bankItems.length)];
+
+        const fallbackText = bankMatch?.text || `Explain the theoretical principles and practical significance of ${slot.topicTitle || "this topic"} in detail.`;
         const fallbackCandidate: QuestionCandidate = {
           id: `cand_fb_${slot.id}`,
           questionText: fallbackText,
@@ -342,15 +361,24 @@ export class LivePaperGenerator {
             eligibilityStatus: "ELIGIBLE",
           },
           answerMaterial: {
-            expectedKeyPoints: [`Key factual principle for ${slot.topicTitle}`],
-            correctOptionKey: slot.questionType === "MCQ" ? "A" : undefined,
-            options: slot.questionType === "MCQ" ? [
-              { key: "A", text: `Accurate formulation of ${slot.topicTitle}`, isCorrect: true },
-              { key: "B", text: `Inaccurate formulation`, isCorrect: false },
-              { key: "C", text: `Alternative distractor`, isCorrect: false },
-              { key: "D", text: `Non-applicable statement`, isCorrect: false },
-            ] : undefined,
+            expectedKeyPoints: bankMatch?.modelAnswer ? [bankMatch.modelAnswer] : [`Key factual principle for ${slot.topicTitle}`],
+            correctOptionKey: slot.questionType === "MCQ" ? (bankMatch?.correctOption || "A") : undefined,
+            options: slot.questionType === "MCQ" ? (
+              bankMatch?.options
+                ? bankMatch.options.map((opt) => ({
+                    key: opt.key,
+                    text: opt.text,
+                    isCorrect: opt.key === (bankMatch.correctOption || "A"),
+                  }))
+                : [
+                    { key: "A" as const, text: `Accurate formulation of ${slot.topicTitle}`, isCorrect: true },
+                    { key: "B" as const, text: `Inaccurate formulation`, isCorrect: false },
+                    { key: "C" as const, text: `Alternative distractor`, isCorrect: false },
+                    { key: "D" as const, text: `Non-applicable statement`, isCorrect: false },
+                  ]
+            ) : undefined,
           },
+
           generationModel: "gemini-2.5-pro",
           generationProvider: config.preferredProvider || "GoogleGeminiProvider",
           generationVersion: "v1.0",

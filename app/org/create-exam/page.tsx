@@ -43,45 +43,152 @@ const GROUPS_BY_CLASS: Record<string, string[]> = {
   "2nd Year": ["FSc Pre-Medical", "FSc Pre-Engineering", "ICS (Computer Science)", "I.Com (Commerce)", "FA (Humanities)"],
 };
 
-const SUBJECTS_BY_GROUP: Record<string, { code: string; name: string }[]> = {
-  "Science (Biology Group)": [
-    { code: "BIO", name: "Biology" },
-    { code: "PHY", name: "Physics" },
-    { code: "CHM", name: "Chemistry" },
-    { code: "ENG", name: "English Compulsory" },
-    { code: "URD", name: "Urdu Compulsory" },
-    { code: "ISL", name: "Islamiyat / Pak Studies" },
-  ],
-  "Science (Computer Science Group)": [
-    { code: "CS", name: "Computer Science" },
-    { code: "PHY", name: "Physics" },
-    { code: "CHM", name: "Chemistry" },
-    { code: "MTH", name: "Mathematics" },
-    { code: "ENG", name: "English Compulsory" },
-    { code: "URD", name: "Urdu Compulsory" },
-  ],
-  "FSc Pre-Medical": [
-    { code: "BIO-11", name: "Biology" },
-    { code: "PHY-11", name: "Physics" },
-    { code: "CHM-11", name: "Chemistry" },
-    { code: "ENG-11", name: "English" },
-    { code: "URD-11", name: "Urdu" },
-  ],
-  "FSc Pre-Engineering": [
-    { code: "MTH-11", name: "Mathematics" },
-    { code: "PHY-11", name: "Physics" },
-    { code: "CHM-11", name: "Chemistry" },
-    { code: "ENG-11", name: "English" },
-    { code: "URD-11", name: "Urdu" },
-  ],
-  "ICS (Computer Science)": [
-    { code: "CS-11", name: "Computer Science" },
-    { code: "MTH-11", name: "Mathematics" },
-    { code: "PHY-11", name: "Physics / Statistics" },
-    { code: "ENG-11", name: "English" },
-    { code: "URD-11", name: "Urdu" },
-  ],
-};
+function getSubjectsForClassAndGroup(className: string, groupName: string): { code: string; name: string }[] {
+  if (className === "Class 9") {
+    if (groupName.includes("Biology")) {
+      return [
+        { code: "BIO-09", name: "Biology" },
+        { code: "PHY-09", name: "Physics" },
+        { code: "CHM-09", name: "Chemistry" },
+        { code: "ENG-09", name: "English Compulsory" },
+        { code: "URD-09", name: "Urdu Compulsory" },
+        { code: "ISL-09", name: "Islamiyat Compulsory" },
+        { code: "MTH-09", name: "Mathematics" },
+      ];
+    }
+    if (groupName.includes("Computer")) {
+      return [
+        { code: "CS-09", name: "Computer Science" },
+        { code: "PHY-09", name: "Physics" },
+        { code: "CHM-09", name: "Chemistry" },
+        { code: "MTH-09", name: "Mathematics" },
+        { code: "ENG-09", name: "English Compulsory" },
+        { code: "URD-09", name: "Urdu Compulsory" },
+        { code: "ISL-09", name: "Islamiyat Compulsory" },
+      ];
+    }
+    return [
+      { code: "GSCI-09", name: "General Science" },
+      { code: "GMTH-09", name: "General Mathematics" },
+      { code: "ENG-09", name: "English Compulsory" },
+      { code: "URD-09", name: "Urdu Compulsory" },
+      { code: "ISL-09", name: "Islamiyat Compulsory" },
+      { code: "EDU-09", name: "Education / Civics" },
+    ];
+  }
+
+  if (className === "Class 10") {
+    if (groupName.includes("Biology")) {
+      return [
+        { code: "BIO-10", name: "Biology" },
+        { code: "PHY-10", name: "Physics" },
+        { code: "CHM-10", name: "Chemistry" },
+        { code: "ENG-10", name: "English Compulsory" },
+        { code: "URD-10", name: "Urdu Compulsory" },
+        { code: "PAK-10", name: "Pakistan Studies" },
+        { code: "MTH-10", name: "Mathematics" },
+      ];
+    }
+    if (groupName.includes("Computer")) {
+      return [
+        { code: "CS-10", name: "Computer Science" },
+        { code: "PHY-10", name: "Physics" },
+        { code: "CHM-10", name: "Chemistry" },
+        { code: "MTH-10", name: "Mathematics" },
+        { code: "ENG-10", name: "English Compulsory" },
+        { code: "URD-10", name: "Urdu Compulsory" },
+        { code: "PAK-10", name: "Pakistan Studies" },
+      ];
+    }
+    return [
+      { code: "GSCI-10", name: "General Science" },
+      { code: "GMTH-10", name: "General Mathematics" },
+      { code: "ENG-10", name: "English Compulsory" },
+      { code: "URD-10", name: "Urdu Compulsory" },
+      { code: "PAK-10", name: "Pakistan Studies" },
+      { code: "EDU-10", name: "Education / Civics" },
+    ];
+  }
+
+  if (className === "1st Year") {
+    if (groupName.includes("Pre-Medical")) {
+      return [
+        { code: "BIO-11", name: "Biology" },
+        { code: "PHY-11", name: "Physics" },
+        { code: "CHM-11", name: "Chemistry" },
+        { code: "ENG-11", name: "English" },
+        { code: "URD-11", name: "Urdu" },
+        { code: "ISL-11", name: "Islamic Education" },
+      ];
+    }
+    if (groupName.includes("Pre-Engineering")) {
+      return [
+        { code: "MTH-11", name: "Mathematics" },
+        { code: "PHY-11", name: "Physics" },
+        { code: "CHM-11", name: "Chemistry" },
+        { code: "ENG-11", name: "English" },
+        { code: "URD-11", name: "Urdu" },
+        { code: "ISL-11", name: "Islamic Education" },
+      ];
+    }
+    if (groupName.includes("ICS")) {
+      return [
+        { code: "CS-11", name: "Computer Science" },
+        { code: "MTH-11", name: "Mathematics" },
+        { code: "PHY-11", name: "Physics / Statistics" },
+        { code: "ENG-11", name: "English" },
+        { code: "URD-11", name: "Urdu" },
+        { code: "ISL-11", name: "Islamic Education" },
+      ];
+    }
+    return [
+      { code: "ENG-11", name: "English" },
+      { code: "URD-11", name: "Urdu" },
+      { code: "ISL-11", name: "Islamic Education" },
+      { code: "ECO-11", name: "Economics / Civics" },
+      { code: "ACC-11", name: "Principles of Accounting" },
+    ];
+  }
+
+  // 2nd Year (Class 12)
+  if (groupName.includes("Pre-Medical")) {
+    return [
+      { code: "BIO-12", name: "Biology" },
+      { code: "PHY-12", name: "Physics" },
+      { code: "CHM-12", name: "Chemistry" },
+      { code: "ENG-12", name: "English" },
+      { code: "URD-12", name: "Urdu" },
+      { code: "PAK-12", name: "Pakistan Studies" },
+    ];
+  }
+  if (groupName.includes("Pre-Engineering")) {
+    return [
+      { code: "MTH-12", name: "Mathematics" },
+      { code: "PHY-12", name: "Physics" },
+      { code: "CHM-12", name: "Chemistry" },
+      { code: "ENG-12", name: "English" },
+      { code: "URD-12", name: "Urdu" },
+      { code: "PAK-12", name: "Pakistan Studies" },
+    ];
+  }
+  if (groupName.includes("ICS")) {
+    return [
+      { code: "CS-12", name: "Computer Science" },
+      { code: "MTH-12", name: "Mathematics" },
+      { code: "PHY-12", name: "Physics / Statistics" },
+      { code: "ENG-12", name: "English" },
+      { code: "URD-12", name: "Urdu" },
+      { code: "PAK-12", name: "Pakistan Studies" },
+    ];
+  }
+  return [
+    { code: "ENG-12", name: "English" },
+    { code: "URD-12", name: "Urdu" },
+    { code: "PAK-12", name: "Pakistan Studies" },
+    { code: "ECO-12", name: "Economics / Civics" },
+    { code: "ACC-12", name: "Commercial Geography / Banking" },
+  ];
+}
 
 function CreateOrgExamContent() {
   const router = useRouter();
@@ -90,7 +197,7 @@ function CreateOrgExamContent() {
   const [boardCode, setBoardCode] = useState("BISE_LHR");
   const [className, setClassName] = useState("Class 10");
   const [groupName, setGroupName] = useState("Science (Computer Science Group)");
-  const [subjectCode, setSubjectCode] = useState("CS");
+  const [subjectCode, setSubjectCode] = useState("CS-10");
   const [totalMarks, setTotalMarks] = useState("60");
   const [instructions, setInstructions] = useState(
     "Time Allowed: 2 Hours. Total Marks: 60. Write roll number clearly on top. Attempt all compulsory sections."
@@ -100,11 +207,24 @@ function CreateOrgExamContent() {
   const [error, setError] = useState<string | null>(null);
   const [createdSeries, setCreatedSeries] = useState<any | null>(null);
 
+  const availableSubjects = getSubjectsForClassAndGroup(className, groupName);
+
   const handleClassChange = (newClass: string) => {
     setClassName(newClass);
     const availableGroups = GROUPS_BY_CLASS[newClass] || [];
-    if (availableGroups.length > 0) {
-      setGroupName(availableGroups[0]);
+    const newGroup = availableGroups[0] || "Science";
+    setGroupName(newGroup);
+    const subs = getSubjectsForClassAndGroup(newClass, newGroup);
+    if (subs.length > 0) {
+      setSubjectCode(subs[0].code);
+    }
+  };
+
+  const handleGroupChange = (newGroup: string) => {
+    setGroupName(newGroup);
+    const subs = getSubjectsForClassAndGroup(className, newGroup);
+    if (subs.length > 0) {
+      setSubjectCode(subs[0].code);
     }
   };
 
@@ -112,6 +232,8 @@ function CreateOrgExamContent() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const selSub = availableSubjects.find((s) => s.code === subjectCode) || availableSubjects[0];
 
     try {
       const res = await fetch("/api/org/test-series", {
@@ -122,7 +244,8 @@ function CreateOrgExamContent() {
           boardCode,
           className,
           groupName,
-          subjectCode,
+          subjectCode: selSub?.code || subjectCode,
+          subjectName: selSub?.name || "Subject",
           totalMarks: parseInt(totalMarks, 10),
           instructions,
         }),
@@ -140,6 +263,7 @@ function CreateOrgExamContent() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
@@ -281,7 +405,7 @@ function CreateOrgExamContent() {
               </label>
               <select
                 value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
+                onChange={(e) => handleGroupChange(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
               >
                 {(GROUPS_BY_CLASS[className] || []).map((grp) => (
@@ -301,19 +425,14 @@ function CreateOrgExamContent() {
                 onChange={(e) => setSubjectCode(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
               >
-                {(SUBJECTS_BY_GROUP[groupName] || [
-                  { code: "PHY", name: "Physics" },
-                  { code: "CHM", name: "Chemistry" },
-                  { code: "MTH", name: "Mathematics" },
-                  { code: "CS", name: "Computer Science" },
-                  { code: "BIO", name: "Biology" },
-                ]).map((s) => (
+                {availableSubjects.map((s) => (
                   <option key={s.code} value={s.code}>
                     {s.name} ({s.code})
                   </option>
                 ))}
               </select>
             </div>
+
 
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1.5">

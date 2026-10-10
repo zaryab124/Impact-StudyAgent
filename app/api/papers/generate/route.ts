@@ -13,6 +13,7 @@ import { ExaminationPaper, ExaminationPaperQuestion, ExaminationPaperSection } f
 import { calculateDifficultyDistribution } from "@/lib/blueprint/calculator";
 
 import { LivePaperGenerator } from "@/server/exam-engine/live-paper-generator";
+import { CurriculumQuestionBank, CURRICULUM_QUESTION_REGISTRY } from "@/server/exam-engine/curriculum-question-bank";
 
 export async function POST(req: NextRequest) {
   try {
@@ -151,29 +152,39 @@ export async function POST(req: NextRequest) {
       ? chapterIds
       : ["Fundamental Concepts", "Theoretical Foundations", "Practical Applications", "Experimental Verification"];
 
+    // Query authentic curriculum question bank matching requested class & subject
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(classId);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(subjectId);
+    const bankPool = CURRICULUM_QUESTION_REGISTRY.filter(
+      (q) => q.classLevel === normClass && q.subjectKey === normSub
+    );
+
     const sections: ExaminationPaperSection[] = sectionConfigs.map((sc) => {
       const qIds: string[] = [];
+      const candidateItems = bankPool.filter((q) => q.type === sc.questionType);
+
       for (let i = 0; i < sc.count; i++) {
         const topicName = sampleTopics[(seq - 1) % sampleTopics.length];
         const difficulty =
           seq <= dist.easy ? "EASY" : seq <= dist.easy + dist.medium ? "MEDIUM" : "DIFFICULT";
 
-        let qText = "";
-        let studentOptions: Array<{ key: "A" | "B" | "C" | "D"; text: string }> | undefined = undefined;
+        const bankItem = candidateItems[i % Math.max(1, candidateItems.length)];
 
-        if (sc.questionType === "MCQ") {
-          qText = `Which of the following statements is correct regarding ${topicName}? (Item #${seq})`;
-          studentOptions = [
-            { key: "A", text: `Primary standard characteristic of ${topicName}.` },
-            { key: "B", text: `Inverse proportional factor with negligible contribution.` },
-            { key: "C", text: `Theoretical approximation valid only under standard conditions.` },
-            { key: "D", text: `Dependent magnitude with indeterminate boundaries.` },
-          ];
-        } else if (sc.questionType === "SHORT") {
-          qText = `Briefly explain the principle of ${topicName} and state its primary significance.`;
-        } else {
-          qText = `Derive the governing formulation for ${topicName} and elucidate its physical meaning with suitable illustrations.`;
-        }
+        const qText = bankItem?.text || (sc.questionType === "MCQ" 
+          ? `Identify the fundamental scientific principle of ${topicName} (Item #${seq}).`
+          : sc.questionType === "SHORT"
+          ? `Briefly explain the principle of ${topicName} and state its primary significance.`
+          : `Derive the governing formulation for ${topicName} with detailed theoretical explanation.`);
+
+        const studentOptions = bankItem?.options || (sc.questionType === "MCQ" ? [
+          { key: "A", text: `Standard verified formulation of ${topicName}.` },
+          { key: "B", text: `Inverse proportional factor.` },
+          { key: "C", text: `Theoretical approximation under standard state.` },
+          { key: "D", text: `Negligible contribution.` },
+        ] : undefined);
+
+        const chapterTitle = bankItem?.chapterTitle || `Chapter on ${topicName}`;
+        const topicTitle = bankItem?.topicTitle || topicName;
 
         const qId = `q_${paperId}_${seq}`;
         qIds.push(qId);
@@ -182,7 +193,7 @@ export async function POST(req: NextRequest) {
           id: qId,
           paperId,
           blueprintSlotId: `slot_${seq}`,
-          questionBankItemId: `qb_${seq}`,
+          questionBankItemId: bankItem?.id || `qb_${seq}`,
           questionBankVersion: "v1.0",
           sequence: seq,
           sectionId: sc.id,
@@ -196,9 +207,9 @@ export async function POST(req: NextRequest) {
           questionText: qText,
           options: studentOptions,
           chapterId: (chapterIds && chapterIds[0]) || "chap-01",
-          chapterTitle: `Chapter on ${topicName}`,
+          chapterTitle,
           topicId: `top_${seq}`,
-          topicTitle: topicName,
+          topicTitle,
           sourcePages: [10 + (seq * 3)],
           provenance: {
             documentId: `doc_${paperId}`,
@@ -206,9 +217,9 @@ export async function POST(req: NextRequest) {
             bookTitle: "Prescribed Board Textbook",
             pageNumber: 10 + (seq * 3),
             chapterId: (chapterIds && chapterIds[0]) || "chap-01",
-            chapterTitle: `Chapter on ${topicName}`,
+            chapterTitle,
             topicId: `top_${seq}`,
-            topicTitle: topicName,
+            topicTitle,
             chunkId: `chunk_${seq}`,
             syllabusId: "syl-verified-2025",
             syllabusVersion: "v1.0",
@@ -220,15 +231,16 @@ export async function POST(req: NextRequest) {
         questions.push(qItem);
         snapshotQuestions.push({
           ...qItem,
-          answerKey: sc.questionType === "MCQ" ? "A" : `Detailed textbook evidence solution for ${topicName}`,
+          answerKey: bankItem?.correctOption || (sc.questionType === "MCQ" ? "A" : bankItem?.modelAnswer || `Detailed textbook evidence solution for ${topicName}`),
           answerMaterial: {
-            correctOptionKey: sc.questionType === "MCQ" ? "A" : undefined,
-            markingCriteria: `Correct analysis for ${topicName}`,
+            correctOptionKey: bankItem?.correctOption || (sc.questionType === "MCQ" ? "A" : undefined),
+            markingCriteria: bankItem?.modelAnswer || `Correct analysis for ${topicName}`,
           },
         });
 
         seq++;
       }
+
 
       return {
         id: sc.id,

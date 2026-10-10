@@ -69,9 +69,7 @@ describe("Subscription, Portals & Role Approvals Tests", () => {
     expect(approvalRes.status).toBe("ACTIVE");
 
     // Verify student is now ACTIVE
-    const updatedStudent = await prisma.user.findUnique({
-      where: { email: testStudentEmail },
-    });
+    const updatedStudent = await SubscriptionService.getUser(testStudentEmail);
     expect(updatedStudent?.subscriptionStatus).toBe("ACTIVE");
   });
 
@@ -89,9 +87,7 @@ describe("Subscription, Portals & Role Approvals Tests", () => {
   });
 
   it("5. Parent Analytics retrieves student exam performance and weak areas", async () => {
-    const student = await prisma.user.findUnique({
-      where: { email: testStudentEmail },
-    });
+    const student = await SubscriptionService.getUser(testStudentEmail);
 
     const analytics = await SubscriptionService.getStudentAnalytics(student!.id);
     expect(analytics.student.email).toBe(testStudentEmail);
