@@ -661,7 +661,7 @@ async function main() {
         prisma.book.upsert({
           where: { id: `book-pctb-${subj.code.toLowerCase()}` },
           update: {
-            title: `${subj.name} (Punjab Curriculum & Textbook Board)`,
+            title: `${cls.numericLevel === 9 ? "Class 9 " : ""}${subj.name} (Punjab Curriculum & Textbook Board)`,
             status: "ACTIVE",
             version: "2024.PCTB",
           },
@@ -671,7 +671,7 @@ async function main() {
             academicYearId: primaryYearId,
             classId,
             subjectId: subjectEntity.id,
-            title: `${subj.name} (Punjab Curriculum & Textbook Board)`,
+            title: `${cls.numericLevel === 9 ? "Class 9 " : ""}${subj.name} (Punjab Curriculum & Textbook Board)`,
             version: "2024.PCTB",
             edition: "2024-2025 Edition",
             publisher: "Punjab Curriculum and Textbook Board, Lahore",
@@ -686,7 +686,7 @@ async function main() {
         prisma.book.upsert({
           where: { id: `book-nbf-${subj.code.toLowerCase()}` },
           update: {
-            title: `${subj.name} (National Book Foundation / Federal)`,
+            title: `${cls.numericLevel === 9 ? "Class 9 " : ""}${subj.name} (National Book Foundation / Federal)`,
             status: "ACTIVE",
             version: "2024.NBF",
           },
@@ -696,7 +696,7 @@ async function main() {
             academicYearId: primaryYearId,
             classId,
             subjectId: subjectEntity.id,
-            title: `${subj.name} (National Book Foundation / Federal)`,
+            title: `${cls.numericLevel === 9 ? "Class 9 " : ""}${subj.name} (National Book Foundation / Federal)`,
             version: "2024.NBF",
             edition: "2024-2025 National Curriculum Edition",
             publisher: "National Book Foundation, Islamabad",

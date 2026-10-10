@@ -24,9 +24,10 @@ import {
   FileCheck,
   Binary,
 } from "lucide-react";
+import { RouteGuard } from "@/components/auth/RouteGuard";
 import { DocumentQualityReport, DocumentStatus, ElementType, ChunkType, KnowledgeSearchResult } from "@/types/knowledge";
 
-export default function BookIntelligencePage() {
+function BookIntelligenceContent() {
   const [books, setBooks] = useState<any[]>([]);
   const [documents, setDocuments] = useState<any[]>([]);
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
@@ -40,6 +41,11 @@ export default function BookIntelligencePage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [autoProcess, setAutoProcess] = useState<boolean>(true);
   const [uploadProgress, setUploadProgress] = useState<string>("");
+
+  // Book Selection Filters
+  const [filterClass, setFilterClass] = useState<string>("ALL"); // "ALL", "9", "10", "11", "12"
+  const [filterBoard, setFilterBoard] = useState<string>("ALL"); // "ALL", "PUNJAB", "FEDERAL"
+  const [bookSearch, setBookSearch] = useState<string>("");
 
 
   // Elements Browser State
@@ -334,6 +340,40 @@ export default function BookIntelligencePage() {
   const stages = ["UPLOADED", "VALIDATING", "EXTRACTING", "STRUCTURING", "CHUNKING", "EMBEDDING", "COMPLETED"];
   const currentStageIndex = activeDoc ? stages.indexOf(activeDoc.status) : 0;
 
+  const filteredBooks = books.filter((b) => {
+    const numericLevel = b.class?.numericLevel;
+    const isClass9 = numericLevel === 9 || b.title?.includes("Class 9") || b.title?.includes("09");
+    const isClass10 = numericLevel === 10 || b.title?.includes("Class 10") || b.title?.includes("10th");
+    const isClass11 = numericLevel === 11 || b.title?.includes("1st Year") || b.title?.includes("Class 11");
+    const isClass12 = numericLevel === 12 || b.title?.includes("2nd Year") || b.title?.includes("Class 12");
+
+    if (filterClass === "9" && !isClass9) return false;
+    if (filterClass === "10" && !isClass10) return false;
+    if (filterClass === "11" && !isClass11) return false;
+    if (filterClass === "12" && !isClass12) return false;
+
+    if (filterBoard === "PUNJAB" && !b.title?.includes("Punjab") && !b.board?.code?.startsWith("BISE")) return false;
+    if (filterBoard === "FEDERAL" && !b.title?.includes("Federal") && !b.title?.includes("National Book Foundation") && b.board?.code !== "FBISE") return false;
+
+    if (bookSearch.trim()) {
+      const q = bookSearch.toLowerCase();
+      const matchTitle = b.title?.toLowerCase().includes(q);
+      const matchSubject = b.subject?.name?.toLowerCase().includes(q) || b.subject?.code?.toLowerCase().includes(q);
+      const matchBoard = b.board?.name?.toLowerCase().includes(q) || b.board?.code?.toLowerCase().includes(q);
+      if (!matchTitle && !matchSubject && !matchBoard) return false;
+    }
+
+    return true;
+  });
+
+  const class9Books = filteredBooks.filter((b) => b.class?.numericLevel === 9 || b.title?.includes("Class 9") || b.title?.includes("09"));
+  const class10Books = filteredBooks.filter((b) => (b.class?.numericLevel === 10 || b.title?.includes("Class 10")) && !class9Books.includes(b));
+  const class11Books = filteredBooks.filter((b) => (b.class?.numericLevel === 11 || b.title?.includes("1st Year")) && !class9Books.includes(b) && !class10Books.includes(b));
+  const class12Books = filteredBooks.filter((b) => (b.class?.numericLevel === 12 || b.title?.includes("2nd Year")) && !class9Books.includes(b) && !class10Books.includes(b) && !class11Books.includes(b));
+  const otherBooks = filteredBooks.filter((b) => !class9Books.includes(b) && !class10Books.includes(b) && !class11Books.includes(b) && !class12Books.includes(b));
+
+  const selectedBook = books.find((b) => b.id === selectedBookId);
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
       {/* Top Header */}
@@ -401,22 +441,144 @@ export default function BookIntelligencePage() {
 
               <form onSubmit={handleUpload} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Target Book Entity
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Target Book Entity
+                    </label>
+                    <span className="text-[11px] font-semibold text-indigo-600">
+                      {filteredBooks.length} available
+                    </span>
+                  </div>
+
+                  {/* Class Filter Chips */}
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {[
+                      { id: "ALL", label: "All Classes" },
+                      { id: "9", label: "Class 9 (SSC-I)" },
+                      { id: "10", label: "Class 10 (SSC-II)" },
+                      { id: "11", label: "1st Year (11)" },
+                      { id: "12", label: "2nd Year (12)" },
+                    ].map((cls) => (
+                      <button
+                        key={cls.id}
+                        type="button"
+                        onClick={() => setFilterClass(cls.id)}
+                        className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-all ${
+                          filterClass === cls.id
+                            ? "bg-indigo-600 text-white shadow-sm"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {cls.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Board Filter Chips */}
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {[
+                      { id: "ALL", label: "All Boards" },
+                      { id: "PUNJAB", label: "Punjab (PCTB)" },
+                      { id: "FEDERAL", label: "Federal (FBISE/NBF)" },
+                    ].map((brd) => (
+                      <button
+                        key={brd.id}
+                        type="button"
+                        onClick={() => setFilterBoard(brd.id)}
+                        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-all ${
+                          filterBoard === brd.id
+                            ? "bg-slate-800 text-white"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {brd.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Quick Book Search */}
+                  <div className="relative mb-2">
+                    <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={bookSearch}
+                      onChange={(e) => setBookSearch(e.target.value)}
+                      placeholder="Filter by subject, e.g. Physics, Biology..."
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Grouped Target Book Selector */}
                   <select
                     value={selectedBookId}
                     onChange={(e) => setSelectedBookId(e.target.value)}
                     required
-                    className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                    className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-medium text-slate-800"
                   >
-                    <option value="">-- Select Book --</option>
-                    {books.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.title} ({b.subject?.name || "Subject"})
-                      </option>
-                    ))}
+                    <option value="">-- Select Target Textbook ({filteredBooks.length} filtered) --</option>
+                    {class9Books.length > 0 && (
+                      <optgroup label="── CLASS 9 (SSC PART-I / METRIC 9TH) ──">
+                        {class9Books.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {class10Books.length > 0 && (
+                      <optgroup label="── CLASS 10 (SSC PART-II / METRIC 10TH) ──">
+                        {class10Books.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {class11Books.length > 0 && (
+                      <optgroup label="── 1ST YEAR (HSSC PART-I / INTER) ──">
+                        {class11Books.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {class12Books.length > 0 && (
+                      <optgroup label="── 2ND YEAR (HSSC PART-II / INTER) ──">
+                        {class12Books.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {otherBooks.length > 0 && (
+                      <optgroup label="── OTHER TEXTBOOKS ──">
+                        {otherBooks.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.title}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
                   </select>
+
+                  {/* Selected Book Info Card */}
+                  {selectedBook && (
+                    <div className="mt-2 p-2.5 bg-indigo-50/70 border border-indigo-200 rounded-lg text-xs space-y-1">
+                      <div className="font-bold text-slate-800 flex items-center justify-between">
+                        <span className="truncate max-w-[210px]">{selectedBook.title}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white shrink-0">
+                          {selectedBook.class?.name || (selectedBook.title?.includes("Class 9") ? "Class 9" : "Active")}
+                        </span>
+                      </div>
+                      <div className="text-slate-600 text-[11px] flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span><strong>Board:</strong> {selectedBook.board?.name || selectedBook.board?.code || "Punjab / Federal"}</span>
+                        <span><strong>Subject:</strong> {selectedBook.subject?.name || selectedBook.subject?.code}</span>
+                        <span><strong>Chapters:</strong> {selectedBook._count?.chapters || 0} defined</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -832,5 +994,13 @@ export default function BookIntelligencePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function BookIntelligencePage() {
+  return (
+    <RouteGuard allowedRoles={["ADMIN", "CURRICULUM_OFFICER"]} portalName="Book Intelligence">
+      <BookIntelligenceContent />
+    </RouteGuard>
   );
 }
