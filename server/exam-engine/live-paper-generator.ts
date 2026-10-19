@@ -338,8 +338,11 @@ export class LivePaperGenerator {
           );
         }
 
+        // Shuffle bank items to guarantee alternate papers across successive generation calls
+        const shuffledBank = [...bankItems].sort(() => Math.random() - 0.5);
+
         // Pick unused question first to guarantee 0% repeats
-        let bankMatch = bankItems.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
+        let bankMatch = shuffledBank.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
 
         let fallbackText = "";
         let fallbackMcqOptions = bankMatch?.options;
@@ -348,31 +351,63 @@ export class LivePaperGenerator {
           usedQuestionIds.add(bankMatch.id);
           usedQuestionTexts.add(bankMatch.text.trim());
           fallbackText = bankMatch.text;
+          if (slot.questionType === "MCQ" && fallbackMcqOptions && fallbackMcqOptions.length === 4) {
+            const shuffledTexts = [...fallbackMcqOptions.map((o) => o.text)].sort(() => Math.random() - 0.5);
+            fallbackMcqOptions = [
+              { key: "A", text: shuffledTexts[0] },
+              { key: "B", text: shuffledTexts[1] },
+              { key: "C", text: shuffledTexts[2] },
+              { key: "D", text: shuffledTexts[3] },
+            ];
+          }
         } else {
           // If bankItems of this type are exhausted, synthesize a distinct, non-repeating question for this topic
           const topicLabel = slot.topicTitle || `Prescribed Syllabus Topic ${slot.sequence}`;
-          if (slot.questionType === "MCQ") {
-            fallbackText = `Which of the following statements is conceptually and factually correct regarding ${topicLabel}? (Item #${slot.sequence})`;
-            fallbackMcqOptions = [
-              { key: "A", text: `Fundamental principle and governing rule of ${topicLabel}` },
-              { key: "B", text: `Secondary characteristic under ambient conditions` },
-              { key: "C", text: `Inverse proportional variance factor` },
-              { key: "D", text: `Non-applicable baseline condition` },
-            ];
-          } else if (slot.questionType === "SHORT") {
-            fallbackText = `Explain the salient aspects and analytical significance of ${topicLabel} with respect to the prescribed board curriculum.`;
+          if (normSub === "URD") {
+            if (slot.questionType === "MCQ") {
+              fallbackText = `درج ذیل میں سے کون سا بیان '${topicLabel}' کے حوالے سے درست اور نصابی تقاضوں کے عین مطابق ہے؟ (سوال #${slot.sequence})`;
+              fallbackMcqOptions = [
+                { key: "A", text: `بنیادی اور مسلّمہ نصابی اصول` },
+                { key: "B", text: `ضمنی خصوصیت اور عام مشاہدہ` },
+                { key: "C", text: `برعکس اور نامناسب مفہوم` },
+                { key: "D", text: `غیر متعلقہ رائے` },
+              ];
+            } else if (slot.questionType === "SHORT") {
+              fallbackText = `نصابِ اردو کے مطابق '${topicLabel}' کا بنیادی مفہوم، سیاق و سباق اور مصنف کا فکری نقطۂ نظر مختصراً بیان کریں۔`;
+            } else {
+              fallbackText = `سبق/عنوان '${topicLabel}' کا مفصل جائزہ لیں، اس کے اہم نکات، اخلاقی و ادبی پہلوؤں اور خلاصے پر جامع نوٹ تحریر کریں۔`;
+            }
           } else {
-            fallbackText = `Provide a comprehensive theoretical exposition of ${topicLabel}, discussing its core principles, derivations, and practical applications in detail.`;
+            if (slot.questionType === "MCQ") {
+              fallbackText = `Which of the following statements is conceptually and factually correct regarding ${topicLabel}? (Item #${slot.sequence})`;
+              fallbackMcqOptions = [
+                { key: "A", text: `Fundamental principle and governing rule of ${topicLabel}` },
+                { key: "B", text: `Secondary characteristic under ambient conditions` },
+                { key: "C", text: `Inverse proportional variance factor` },
+                { key: "D", text: `Non-applicable baseline condition` },
+              ];
+            } else if (slot.questionType === "SHORT") {
+              fallbackText = `Explain the salient aspects and analytical significance of ${topicLabel} with respect to the prescribed board curriculum.`;
+            } else {
+              fallbackText = `Provide a comprehensive theoretical exposition of ${topicLabel}, discussing its core principles, derivations, and practical applications in detail.`;
+            }
           }
           usedQuestionTexts.add(fallbackText.trim());
         }
 
         // Retrieve authentic fallback MCQ options if needed
         if (!fallbackMcqOptions && slot.questionType === "MCQ") {
-          const sampleMcq = CURRICULUM_QUESTION_REGISTRY.find(
-            (q) => q.type === "MCQ" && (q.subjectKey === normSub || q.classLevel === normClass) && q.options && q.options.length === 4
-          ) || CURRICULUM_QUESTION_REGISTRY.find((q) => q.type === "MCQ" && q.options && q.options.length === 4);
-          fallbackMcqOptions = sampleMcq?.options;
+          fallbackMcqOptions = normSub === "URD" ? [
+            { key: "A", text: "بنیادی نصابی اصول" },
+            { key: "B", text: "ضمنی مشاہدہ" },
+            { key: "C", text: "برعکس تصور" },
+            { key: "D", text: "غیر متعلقہ رائے" },
+          ] : [
+            { key: "A", text: "Fundamental principle" },
+            { key: "B", text: "Secondary observation" },
+            { key: "C", text: "Inverse relationship" },
+            { key: "D", text: "Non-applicable factor" },
+          ];
         }
 
         const fallbackCandidate: QuestionCandidate = {

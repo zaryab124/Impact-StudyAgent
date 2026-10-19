@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { CurriculumQuestionBank } from "@/server/exam-engine/curriculum-question-bank";
+import { CurriculumQuestionBank, CURRICULUM_QUESTION_REGISTRY } from "@/server/exam-engine/curriculum-question-bank";
 
 describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
   it("1. Generates authentic Class 9 (SSC-I) Physics paper with unique 9th syllabus questions", () => {
@@ -409,6 +409,70 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     // Verify zero duplicates
     const uniqueQuestions = new Set(questionTexts);
     expect(uniqueQuestions.size).toBe(paper!.questions.length);
+  });
+
+  it("17. Registers authentic Class 9 Urdu textbook (PCTB-URD-09) in official Punjab textbook catalog", async () => {
+    const { PctbService } = await import("@/server/punjab/pctb-service");
+    const catalog = PctbService.getCatalog();
+    const urduBook = catalog.find((b) => b.code === "PCTB-URD-09" || b.id === "pctb-urd-09");
+
+    expect(urduBook).toBeDefined();
+    expect(urduBook?.classLevel).toBe(9);
+    expect(urduBook?.subjectCode).toBe("URD-09");
+    expect(urduBook?.title).toContain("اردو لازمی برائے جماعت نہم");
+    expect(urduBook?.officialSourceUrl).toBe("https://pctb.punjab.gov.pk/system/files/Urdu-9.pdf");
+    expect(urduBook?.chapters.length).toBeGreaterThanOrEqual(20);
+
+    // Verify key chapters exist
+    const titles = urduBook!.chapters.map((c) => c.title);
+    expect(titles.some((t) => t.includes("ہجرتِ نبوی"))).toBe(true);
+    expect(titles.some((t) => t.includes("مرزا غالب"))).toBe(true);
+    expect(titles.some((t) => t.includes("کاہلی"))).toBe(true);
+    expect(titles.some((t) => t.includes("پنچایت"))).toBe(true);
+    expect(titles.some((t) => t.includes("آرام و سکون"))).toBe(true);
+    expect(titles.some((t) => t.includes("حمد"))).toBe(true);
+    expect(titles.some((t) => t.includes("نعت"))).toBe(true);
+    expect(titles.some((t) => t.includes("میر تقی میر"))).toBe(true);
+    expect(titles.some((t) => t.includes("قواعد و انشا"))).toBe(true);
+  });
+
+  it("18. Guarantees large Class 9 Urdu question bank and alternate non-identical papers on consecutive generations", () => {
+    // 1. Verify large question bank capacity
+    const urdPool = CURRICULUM_QUESTION_REGISTRY.filter(
+      (q) => q.classLevel === "9" && q.subjectKey === "URD"
+    );
+    const mcqs = urdPool.filter((q) => q.type === "MCQ");
+    const shorts = urdPool.filter((q) => q.type === "SHORT");
+    const longs = urdPool.filter((q) => q.type === "LONG");
+
+    expect(mcqs.length).toBeGreaterThanOrEqual(45);
+    expect(shorts.length).toBeGreaterThanOrEqual(25);
+    expect(longs.length).toBeGreaterThanOrEqual(12);
+
+    // 2. Generate Paper 1
+    const paper1Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "9th",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+
+    // 3. Generate Paper 2 (Alternate Paper)
+    const paper2Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "9th",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+
+    const p1McqIds = paper1Sections[0].questions.map((q) => q.text);
+    const p2McqIds = paper2Sections[0].questions.map((q) => q.text);
+
+    // They must not be 100% identical in order or question stems
+    const identicalCount = p1McqIds.filter((t, idx) => t === p2McqIds[idx]).length;
+    expect(identicalCount).toBeLessThan(p1McqIds.length); // Not identical
+
+    // Both papers must contain 0% question duplication internally
+    expect(new Set(p1McqIds).size).toBe(p1McqIds.length);
+    expect(new Set(p2McqIds).size).toBe(p2McqIds.length);
   });
 });
 

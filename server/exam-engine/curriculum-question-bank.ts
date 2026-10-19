@@ -7,6 +7,7 @@
 // ==============================================================================
 
 import { PakistanCurriculumService } from "@/server/curriculum/pakistan-curriculum-registry";
+import { CLASS_9_URDU_QUESTIONS } from "./class9-urdu-bank";
 
 export interface GeneratePaperOptions {
   className?: string;
@@ -3827,6 +3828,7 @@ export const CURRICULUM_QUESTION_REGISTRY: StandardQuestion[] = [
       "2.0 نمبر: دعائیہ کلمات اور باقاعدہ امتحانی اختتامیہ۔",
     ],
   },
+  ...CLASS_9_URDU_QUESTIONS,
 ];
 
 // ------------------------------------------------------------------------------
@@ -4003,24 +4005,37 @@ export class CurriculumQuestionBank {
 
     let globalSeq = 1;
 
+    const randomizeOptions = (options?: Array<{ key: "A" | "B" | "C" | "D"; text: string }>, correctOption?: "A" | "B" | "C" | "D") => {
+      if (!options || options.length !== 4 || !correctOption) return { options, correctOption };
+      const correctText = options.find((o) => o.key === correctOption)?.text;
+      const shuffledTexts = [...options.map((o) => o.text)].sort(() => Math.random() - 0.5);
+      const newKeys: Array<"A" | "B" | "C" | "D"> = ["A", "B", "C", "D"];
+      const newOptions = newKeys.map((k, i) => ({ key: k, text: shuffledTexts[i] }));
+      const newCorrectKey = (newOptions.find((o) => o.text === correctText)?.key || correctOption) as "A" | "B" | "C" | "D";
+      return { options: newOptions, correctOption: newCorrectKey };
+    };
+
     // SECTION A: OBJECTIVE / MCQS
     const sectionA: GeneratedPaperSection = {
       sectionName: "Section A: Multiple Choice Questions (Objective)",
       sectionType: "MCQ",
       totalMarks: selectedMcqs.reduce((sum, q) => sum + q.marks, 0) || selectedMcqs.length || 12,
       instructions: "Choose the correct option for each question. Cutting, erasing or overwriting earns zero marks.",
-      questions: selectedMcqs.map((q) => ({
-        id: `q_mcq_${globalSeq}`,
-        sequence: globalSeq++,
-        text: q.text,
-        marks: q.marks,
-        options: q.options,
-        correctOption: q.correctOption,
-        solutionExplanation: q.solutionExplanation,
-        rubric: q.rubric || `1 Mark for choosing option (${q.correctOption}).`,
-        chapterTitle: q.chapterTitle,
-        topicTitle: q.topicTitle,
-      })),
+      questions: selectedMcqs.map((q) => {
+        const { options: randomizedOpts, correctOption: newKey } = randomizeOptions(q.options, q.correctOption);
+        return {
+          id: `q_mcq_${globalSeq}`,
+          sequence: globalSeq++,
+          text: q.text,
+          marks: q.marks,
+          options: randomizedOpts,
+          correctOption: newKey,
+          solutionExplanation: q.solutionExplanation,
+          rubric: q.rubric || `1 Mark for choosing option (${newKey}).`,
+          chapterTitle: q.chapterTitle,
+          topicTitle: q.topicTitle,
+        };
+      }),
     };
 
     // SECTION B: SHORT QUESTIONS

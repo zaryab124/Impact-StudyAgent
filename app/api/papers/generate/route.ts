@@ -171,6 +171,8 @@ export async function POST(req: NextRequest) {
       if (candidateItems.length === 0) {
         candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType && q.subjectKey === normSub);
       }
+      // Shuffle candidate items to guarantee alternate papers on consecutive requests
+      const shuffledCandidates = [...candidateItems].sort(() => Math.random() - 0.5);
 
       for (let i = 0; i < sc.count; i++) {
         const topicName = sampleTopics[(seq - 1) % sampleTopics.length];
@@ -178,7 +180,7 @@ export async function POST(req: NextRequest) {
           seq <= dist.easy ? "EASY" : seq <= dist.easy + dist.medium ? "MEDIUM" : "DIFFICULT";
 
         // Find unused bank item first to guarantee 0% question duplication
-        const bankItem = candidateItems.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
+        const bankItem = shuffledCandidates.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
         if (bankItem) {
           usedQuestionIds.add(bankItem.id);
           usedQuestionTexts.add(bankItem.text.trim());
@@ -186,20 +188,43 @@ export async function POST(req: NextRequest) {
 
         let qText = bankItem?.text;
         if (!qText) {
-          qText = sc.questionType === "MCQ" 
-            ? `Which of the following statements correctly characterizes ${topicName}? (Item #${seq})`
-            : sc.questionType === "SHORT"
-            ? `Explain the fundamental concept of ${topicName} and state its key syllabus significance.`
-            : `Provide a comprehensive derivation and step-by-step detailed analysis for ${topicName}.`;
+          if (normSub === "URD") {
+            qText = sc.questionType === "MCQ" 
+              ? `درج ذیل میں سے کون سا بیان '${topicName}' کے حوالے سے درست اور نصابی تقاضوں کے عین مطابق ہے؟ (سوال #${seq})`
+              : sc.questionType === "SHORT"
+              ? `نصابِ اردو کے مطابق '${topicName}' کا بنیادی مفہوم، سیاق و سباق اور مصنف کا فکری نقطۂ نظر مختصراً بیان کریں۔`
+              : `سبق/عنوان '${topicName}' کا مفصل جائزہ لیں، اس کے اہم نکات، اخلاقی و ادبی پہلوؤں اور خلاصے پر جامع نوٹ تحریر کریں۔`;
+          } else {
+            qText = sc.questionType === "MCQ" 
+              ? `Which of the following statements correctly characterizes ${topicName}? (Item #${seq})`
+              : sc.questionType === "SHORT"
+              ? `Explain the fundamental concept of ${topicName} and state its key syllabus significance.`
+              : `Provide a comprehensive derivation and step-by-step detailed analysis for ${topicName}.`;
+          }
           usedQuestionTexts.add(qText.trim());
         }
 
         let studentOptions = bankItem?.options;
-        if (!studentOptions && sc.questionType === "MCQ") {
-          const sampleWithOpts = CURRICULUM_QUESTION_REGISTRY.find(
-            (q) => q.type === "MCQ" && (q.subjectKey === normSub || q.classLevel === normClass) && q.options && q.options.length === 4
-          ) || CURRICULUM_QUESTION_REGISTRY.find((q) => q.type === "MCQ" && q.options && q.options.length === 4);
-          studentOptions = sampleWithOpts?.options;
+        if (studentOptions && sc.questionType === "MCQ" && studentOptions.length === 4) {
+          const shuffledOpts = [...studentOptions.map((o) => o.text)].sort(() => Math.random() - 0.5);
+          studentOptions = [
+            { key: "A", text: shuffledOpts[0] },
+            { key: "B", text: shuffledOpts[1] },
+            { key: "C", text: shuffledOpts[2] },
+            { key: "D", text: shuffledOpts[3] },
+          ];
+        } else if (!studentOptions && sc.questionType === "MCQ") {
+          studentOptions = normSub === "URD" ? [
+            { key: "A", text: "بنیادی اور مسلّمہ نصابی اصول" },
+            { key: "B", text: "ضمنی خصوصیت اور عام مشاہدہ" },
+            { key: "C", text: "برعکس اور نامناسب مفہوم" },
+            { key: "D", text: "غیر متعلقہ رائے" },
+          ] : [
+            { key: "A", text: `Fundamental principle and governing rule of ${topicName}` },
+            { key: "B", text: `Secondary characteristic under ambient conditions` },
+            { key: "C", text: `Inverse proportional variance factor` },
+            { key: "D", text: `Non-applicable baseline condition` },
+          ];
         }
 
         const chapterTitle = bankItem?.chapterTitle || `Chapter on ${topicName}`;
