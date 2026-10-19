@@ -281,5 +281,68 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
       expect(mcq.solutionExplanation).toBeDefined();
     }
   });
+
+  it("13. Generates authentic Pakistan Studies (2nd Year Compulsory) Practice Paper without Computer Science pollution or question duplication", () => {
+    const rawTitle = "Pakistan Studies (2nd Year Compulsory) Practice Paper - Pakistan Studies (2nd Year Compulsory) (Punjab Curriculum & Textbook Board)";
+
+    // Verify normalization correctly maps to 2nd Year (12) and Pakistan Studies (PAK)
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(undefined, rawTitle);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(undefined, rawTitle);
+    expect(normClass).toBe("12");
+    expect(normSub).toBe("PAK");
+
+    // Generate paper using 2nd Year Pakistan Studies
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "2nd Year",
+      subjectName: "Pakistan Studies",
+      totalMarks: 60,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    expect(secA.questions.length).toBe(12);
+    expect(secB.questions.length).toBe(6);
+    expect(secC.questions.length).toBe(3);
+
+    const allQuestions = [...secA.questions, ...secB.questions, ...secC.questions];
+    const allStems = allQuestions.map((q) => q.text);
+
+    // Verify authentic 2nd Year Pakistan Studies topics
+    const combinedText = allStems.join(" ");
+    expect(combinedText).toMatch(/objectives resolution|1973 constitution|indus water treaty|allama iqbal|k2|gwadar|cpec|waris shah|shah abdul latif|cotton|durand line|nuclear|foreign policy/i);
+
+    // Verify zero Computer Science / Database pollution
+    expect(combinedText).not.toMatch(/relational database|normalization|1nf|2nf|3nf|flowchart|binary|topology|printf|fopen/i);
+
+    // CRITICAL: Verify ZERO duplicates across all generated questions
+    const uniqueStems = new Set(allStems);
+    expect(uniqueStems.size).toBe(allQuestions.length);
+
+    // Verify MCQs have 4 options, valid keys, and solutions
+    for (const mcq of secA.questions) {
+      expect(mcq.options?.length).toBe(4);
+      expect(mcq.correctOption).toBeDefined();
+      expect(mcq.solutionExplanation).toBeDefined();
+    }
+  });
+
+  it("14. Guarantees ExamRepository.findPaperById hydrates paper_ajkecsx_1792375765438 with authentic Pakistan Studies and zero duplicate questions", async () => {
+    const { ExamRepository } = await import("@/server/exam-engine/exam-repository");
+    const paper = await ExamRepository.findPaperById("paper_ajkecsx_1792375765438");
+
+    expect(paper).not.toBeNull();
+    expect(paper?.title).toMatch(/Pakistan Studies/i);
+
+    // Verify questions belong to Pakistan Studies
+    const questionTexts = paper!.questions.map((q) => q.questionText);
+    const combinedQuestions = questionTexts.join(" ");
+    expect(combinedQuestions).toMatch(/objectives resolution|1973 constitution|indus water treaty|allama iqbal|gwadar|cpec|waris shah|shah abdul latif|cotton|durand line/i);
+    expect(combinedQuestions).not.toMatch(/relational database|normalization|1nf|2nf|3nf/i);
+
+    // Verify zero duplicates
+    const uniqueQuestions = new Set(questionTexts);
+    expect(uniqueQuestions.size).toBe(paper!.questions.length);
+  });
 });
 

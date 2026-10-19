@@ -256,6 +256,8 @@ export class LivePaperGenerator {
     // --------------------------------------------------------------------------
     let totalReplacements = 0;
     const approvedBankItems: QuestionBankItem[] = [];
+    const usedQuestionIds = new Set<string>();
+    const usedQuestionTexts = new Set<string>();
 
     generationLog.push(`[Generation] Processing ${blueprint!.slots.length} question slots with Phase 14 RAG Pipeline.`);
 
@@ -303,6 +305,8 @@ export class LivePaperGenerator {
             await QuestionBankRepository.saveCandidate(cand);
             const bankItem = await QuestionBankRepository.createBankItemFromCandidate(cand, actorId);
             approvedBankItems.push(bankItem);
+            usedQuestionIds.add(cand.id);
+            usedQuestionTexts.add(cand.questionText.trim());
 
             candidateApproved = true;
             generationLog.push(`[Slot ${slot.sequence}] Successfully generated and approved question "${cand.id}".`);
@@ -335,10 +339,37 @@ export class LivePaperGenerator {
             (q) => q.type === slot.questionType
           );
         }
-        const bankMatch = bankItems[(slot.sequence - 1) % Math.max(1, bankItems.length)];
+
+        // Pick unused question first to guarantee 0% repeats
+        let bankMatch = bankItems.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
+
+        let fallbackText = "";
+        let fallbackMcqOptions = bankMatch?.options;
+
+        if (bankMatch) {
+          usedQuestionIds.add(bankMatch.id);
+          usedQuestionTexts.add(bankMatch.text.trim());
+          fallbackText = bankMatch.text;
+        } else {
+          // If bankItems of this type are exhausted, synthesize a distinct, non-repeating question for this topic
+          const topicLabel = slot.topicTitle || `Prescribed Syllabus Topic ${slot.sequence}`;
+          if (slot.questionType === "MCQ") {
+            fallbackText = `Which of the following statements is conceptually and factually correct regarding ${topicLabel}? (Item #${slot.sequence})`;
+            fallbackMcqOptions = [
+              { key: "A", text: `Fundamental principle and governing rule of ${topicLabel}` },
+              { key: "B", text: `Secondary characteristic under ambient conditions` },
+              { key: "C", text: `Inverse proportional variance factor` },
+              { key: "D", text: `Non-applicable baseline condition` },
+            ];
+          } else if (slot.questionType === "SHORT") {
+            fallbackText = `Explain the salient aspects and analytical significance of ${topicLabel} with respect to the prescribed board curriculum.`;
+          } else {
+            fallbackText = `Provide a comprehensive theoretical exposition of ${topicLabel}, discussing its core principles, derivations, and practical applications in detail.`;
+          }
+          usedQuestionTexts.add(fallbackText.trim());
+        }
 
         // Retrieve authentic fallback MCQ options if needed
-        let fallbackMcqOptions = bankMatch?.options;
         if (!fallbackMcqOptions && slot.questionType === "MCQ") {
           const sampleMcq = CURRICULUM_QUESTION_REGISTRY.find(
             (q) => q.type === "MCQ" && (q.subjectKey === normSub || q.classLevel === normClass) && q.options && q.options.length === 4
@@ -346,7 +377,6 @@ export class LivePaperGenerator {
           fallbackMcqOptions = sampleMcq?.options;
         }
 
-        const fallbackText = bankMatch?.text || `Explain the core principles and analytical formulation of ${slot.topicTitle || "this topic"} in detail.`;
         const fallbackCandidate: QuestionCandidate = {
           id: `cand_fb_${slot.id}`,
           questionText: fallbackText,

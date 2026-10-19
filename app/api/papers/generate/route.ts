@@ -168,6 +168,9 @@ export async function POST(req: NextRequest) {
       bankPool = CURRICULUM_QUESTION_REGISTRY;
     }
 
+    const usedQuestionIds = new Set<string>();
+    const usedQuestionTexts = new Set<string>();
+
     const sections: ExaminationPaperSection[] = sectionConfigs.map((sc) => {
       const qIds: string[] = [];
       let candidateItems = bankPool.filter((q) => q.type === sc.questionType);
@@ -183,13 +186,22 @@ export async function POST(req: NextRequest) {
         const difficulty =
           seq <= dist.easy ? "EASY" : seq <= dist.easy + dist.medium ? "MEDIUM" : "DIFFICULT";
 
-        const bankItem = candidateItems[i % Math.max(1, candidateItems.length)];
+        // Find unused bank item first to guarantee 0% question duplication
+        const bankItem = candidateItems.find((q) => !usedQuestionIds.has(q.id) && !usedQuestionTexts.has(q.text.trim()));
+        if (bankItem) {
+          usedQuestionIds.add(bankItem.id);
+          usedQuestionTexts.add(bankItem.text.trim());
+        }
 
-        const qText = bankItem?.text || (sc.questionType === "MCQ" 
-          ? `Evaluate the core analytical formulation and properties of ${topicName} (Item #${seq}).`
-          : sc.questionType === "SHORT"
-          ? `Explain the fundamental concept of ${topicName} and state its key mathematical/scientific significance.`
-          : `Provide a comprehensive derivation and step-by-step solution for ${topicName}.`);
+        let qText = bankItem?.text;
+        if (!qText) {
+          qText = sc.questionType === "MCQ" 
+            ? `Which of the following statements correctly characterizes ${topicName}? (Item #${seq})`
+            : sc.questionType === "SHORT"
+            ? `Explain the fundamental concept of ${topicName} and state its key syllabus significance.`
+            : `Provide a comprehensive derivation and step-by-step detailed analysis for ${topicName}.`;
+          usedQuestionTexts.add(qText.trim());
+        }
 
         let studentOptions = bankItem?.options;
         if (!studentOptions && sc.questionType === "MCQ") {

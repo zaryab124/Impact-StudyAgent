@@ -501,6 +501,19 @@ export const PAKISTAN_CURRICULUM_REGISTRY: SubjectCurriculum[] = [
       { chapterNumber: 5, title: "Functions in C", keyTopics: ["Need for Functions", "Built-in Functions vs User-Defined Functions", "Function Definition, Declaration and Call", "Arguments and Return Values"] },
     ],
   },
+  {
+    classLevel: "10",
+    subjectKey: "PAK",
+    subjectName: "Pakistan Studies",
+    totalMarksBoard: 50,
+    timeAllowedMinutes: 120,
+    chapters: [
+      { chapterNumber: 5, title: "History of Pakistan Part-II (1971 to Present)", keyTopics: ["Zulfiqar Ali Bhutto Era & 1973 Constitution", "Nationalization Policy", "General Zia-ul-Haq Era and Islamization", "Nuclear Program of Pakistan (1998 Chagai Tests)", "Restoration of Democracy & Contemporary Challenges"] },
+      { chapterNumber: 6, title: "Pakistan in World Affairs (Foreign Policy)", keyTopics: ["Objectives of Pakistan's Foreign Policy", "Relations with Neighboring Countries (China, India, Afghanistan, Iran)", "Kashmir Dispute and International Community", "Pakistan and the Muslim World (OIC)", "Relations with Major World Powers (USA, Russia, European Union)"] },
+      { chapterNumber: 7, title: "Economic Development of Pakistan", keyTopics: ["Economic Sectors: Agriculture, Industry, Services", "Major Mineral and Energy Resources", "International Trade, Major Exports and Imports", "China-Pakistan Economic Corridor (CPEC) and Infrastructure Development"] },
+      { chapterNumber: 8, title: "Population, Society and Culture of Pakistan", keyTopics: ["Demographic Characteristics and Literacy in Pakistan", "Cultural Diversity and Regional Heritage", "Urdu as a National Language and National Cohesion", "Social Welfare, Health and Educational Reforms"] },
+    ],
+  },
 
   // ============================================================================
   // 1ST YEAR / CLASS 11 (HSSC PART-I)
@@ -698,6 +711,22 @@ export const PAKISTAN_CURRICULUM_REGISTRY: SubjectCurriculum[] = [
       { chapterNumber: 14, title: "File Handling in C", keyTopics: ["Streams and File Pointers (FILE*)", "fopen(), fclose(), fprintf(), fscanf()", "Sequential vs Random access files"] },
     ],
   },
+  {
+    classLevel: "12",
+    subjectKey: "PAK",
+    subjectName: "Pakistan Studies (Compulsory)",
+    totalMarksBoard: 50,
+    timeAllowedMinutes: 120,
+    chapters: [
+      { chapterNumber: 1, title: "Islam and Pakistan (اسلام اور پاکستان)", keyTopics: ["Ideological Basis of Pakistan", "Two-Nation Theory and Islamic Values", "Principles of Democracy and Social Justice in Islam", "Role of Quaid-e-Azam Muhammad Ali Jinnah and Allama Muhammad Iqbal"] },
+      { chapterNumber: 2, title: "Political and Constitutional Genesis (سیاسی اور آئینی ارتقاء)", keyTopics: ["Early Problems of Pakistan 1947-1948 (Radcliffe Award, Refugees, Canal Water Dispute)", "Objectives Resolution 1949 and its Historic Importance", "Islamic Provisions of the Constitution of 1973", "Federal Structure, Parliament, and Constitutional Amendments"] },
+      { chapterNumber: 3, title: "Geographical Landscape and Environmental Resources of Pakistan (زمین، ماحول اور قدرتی وسائل)", keyTopics: ["Geostrategic and Geopolitical Location of Pakistan", "Physiographic Divisions: Northern Mountains (K2, Nanga Parbat), Plateaus, Indus Plains", "Climate Zones, Monsoon Rainfall Patterns, and River Indus Basin Irrigation", "Environmental Challenges: Deforestation, Water Scarcity, and Conservation"] },
+      { chapterNumber: 4, title: "Economic Planning and Resource Development (معاشی منصوبہ بندی اور ترقی)", keyTopics: ["Role of Agriculture in National Economy: Major Cash Crops (Wheat, Cotton, Rice, Sugarcane)", "Industrial Sector: Textiles, Cement, Fertilizer, Sugar", "Energy Crisis and Resources: Hydel (Tarbela, Mangla), Thermal, Nuclear Energy (PAEC, KANUPP, CHASNUPP)", "China-Pakistan Economic Corridor (CPEC), Gwadar Port, Trade Balance"] },
+      { chapterNumber: 5, title: "Pakistan in International Affairs and Foreign Policy (خارجہ پالیسی اور بین الاقوامی تعلقات)", keyTopics: ["Guiding Principles and Cardinal Objectives of Pakistan's Foreign Policy", "Relations with Immediate Neighbors: China, Afghanistan, India (Kashmir Issue), Iran", "Pakistan and the Muslim World: Organization of Islamic Cooperation (OIC)", "Pakistan's Constructive Role in the United Nations (UN Peacekeeping Missions)"] },
+      { chapterNumber: 6, title: "Culture, Heritage, and Regional Languages of Pakistan (ثقافتی ورثہ اور علاقائی زبانیں)", keyTopics: ["Urdu Language: Origin, Evolution, and Role as Symbol of National Unity", "Regional Languages of Pakistan: Punjabi (Waris Shah), Sindhi (Shah Abdul Latif Bhittai), Pashto (Khushal Khan Khattak), Balochi (Jam Darag)", "Archaeological Heritage: Mohenjo-Daro, Harappa, Gandhara Civilization (Taxila)", "Islamic Architectural Monuments, Folk Arts, and National Festivals"] },
+      { chapterNumber: 7, title: "National Integration, Prosperity and Welfare State (قومی یکجہتی اور فلاحی ریاست)", keyTopics: ["Concept of Islamic Welfare State and Good Governance", "Education, Technical Literacy, and Human Capital Formation", "Civic Rights, Minority Protection, and National Integration in Pakistan"] },
+    ],
+  },
 ];
 
 export class PakistanCurriculumService {
@@ -759,6 +788,8 @@ export class PakistanCurriculumService {
   public static normalizeSubject(sub?: string): string {
     if (!sub) return "PHY";
     const s = sub.toUpperCase();
+    if (s.includes("PAK") || s.includes("PST") || s.includes("MUTALIA") || s.includes("PAKISTAN")) return "PAK";
+    if (s.includes("STAT")) return "STAT";
     if (s.includes("PHY")) return "PHY";
     if (s.includes("CHM") || s.includes("CHEM")) return "CHM";
     if (s.includes("BIO")) return "BIO";
@@ -767,7 +798,6 @@ export class PakistanCurriculumService {
     if (s.includes("ENG")) return "ENG";
     if (s.includes("URD")) return "URD";
     if (s.includes("ISL")) return "ISL";
-    if (s.includes("PAK")) return "PAK";
     return "PHY";
   }
 }
