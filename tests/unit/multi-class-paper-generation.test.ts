@@ -566,6 +566,44 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     const collision = [...stems9].filter((s) => stems10.has(s));
     expect(collision.length).toBe(0);
   });
+
+  it("22. Guarantees EducationService.getSubjects('class-10') includes URD-10 (Urdu Class 10 Compulsory)", async () => {
+    const { EducationService } = await import("@/server/education-service");
+    const subjects = await EducationService.getSubjects("class-10");
+
+    const urduSub = subjects.find((s: any) => s.code === "URD-10");
+    expect(urduSub).toBeDefined();
+    expect(urduSub?.name).toContain("Urdu");
+    expect(urduSub?.name).toContain("10");
+  });
+
+  it("23. Guarantees EducationService.getBooks and getBookChapters resolve authentic PCTB Urdu 10 textbook and all 20 chapters", async () => {
+    const { EducationService } = await import("@/server/education-service");
+    const books = await EducationService.getBooks("subj-urdu-10");
+
+    expect(books.length).toBeGreaterThan(0);
+    const urduBook = books.find((b: any) => b.id.includes("urd") || b.title.includes("اردو"));
+    expect(urduBook).toBeDefined();
+    expect(urduBook?.title).toContain("اردو لازمی برائے جماعت دہم");
+
+    const chapters = await EducationService.getBookChapters(urduBook!.id);
+    expect(chapters.length).toBe(20);
+
+    const chapterTitles = chapters.map((c: any) => c.title);
+    expect(chapterTitles.some((t: string) => t.includes("مرزا محمد سعید"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("نظریہ پاکستان"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("پرستان کی شہزادی"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("اردو ادب میں عید الفطر"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("مجھے میرے دوستوں سے بچاؤ"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("ملمع"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("علی بخش"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("نام دیو مالی"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("حمد"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("نعت"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("میدانِ کربلا میں گرمی کی شدت"))).toBe(true);
+    expect(chapterTitles.some((t: string) => t.includes("فاطمہ بنتِ عبداللہ"))).toBe(true);
+  });
 });
+
 
 

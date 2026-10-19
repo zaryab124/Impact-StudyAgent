@@ -22,22 +22,71 @@ const DEFAULT_CHAPTERS = [
   { id: "chap-07", bookId: "book-physics-09", chapterNumber: 7, title: "Properties of Matter", orderIndex: 7, status: "ACTIVE", topics: [] },
   { id: "chap-08", bookId: "book-physics-09", chapterNumber: 8, title: "Thermal Properties of Matter", orderIndex: 8, status: "ACTIVE", topics: [] },
   { id: "chap-09", bookId: "book-physics-09", chapterNumber: 9, title: "Transfer of Heat", orderIndex: 9, status: "ACTIVE", topics: [] },
-  // PCTB Physics Chapters
-  ...PCTB_OFFICIAL_CATALOG[0].chapters.map((ch) => ({
-    id: `chap-pctb-phy-${ch.chapterNumber}`,
-    bookId: "pctb-phy-09",
-    chapterNumber: ch.chapterNumber,
-    title: ch.title,
-    orderIndex: ch.orderIndex,
-    status: "ACTIVE",
-    topics: ch.topics.map((t) => ({
-      id: `top-pctb-phy-${ch.chapterNumber}-${t.orderIndex}`,
-      title: t.title,
-      topicCode: t.topicCode,
-      orderIndex: t.orderIndex,
+  // PCTB Official Chapters across all registered books (Physics, Urdu 9, Urdu 10, etc.)
+  ...PCTB_OFFICIAL_CATALOG.flatMap((pctb) => [
+    ...pctb.chapters.map((ch) => ({
+      id: `chap-${pctb.id}-${ch.chapterNumber}`,
+      bookId: pctb.id,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
       status: "ACTIVE",
+      topics: ch.topics.map((t) => ({
+        id: `top-${pctb.id}-${ch.chapterNumber}-${t.orderIndex}`,
+        title: t.title,
+        topicCode: t.topicCode,
+        orderIndex: t.orderIndex,
+        status: "ACTIVE",
+      })),
     })),
-  })),
+    ...pctb.chapters.map((ch) => ({
+      id: `chap-book-pctb-${pctb.subjectCode.toLowerCase()}-${ch.chapterNumber}`,
+      bookId: `book-pctb-${pctb.subjectCode.toLowerCase()}`,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: "ACTIVE",
+      topics: ch.topics.map((t) => ({
+        id: `top-book-pctb-${pctb.subjectCode.toLowerCase()}-${ch.chapterNumber}-${t.orderIndex}`,
+        title: t.title,
+        topicCode: t.topicCode,
+        orderIndex: t.orderIndex,
+        status: "ACTIVE",
+      })),
+    })),
+    ...pctb.chapters.map((ch) => ({
+      id: `chap-book-${pctb.subjectCode.toLowerCase()}-${ch.chapterNumber}`,
+      bookId: `book-${pctb.subjectCode.toLowerCase()}`,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: "ACTIVE",
+      topics: ch.topics.map((t) => ({
+        id: `top-book-${pctb.subjectCode.toLowerCase()}-${ch.chapterNumber}-${t.orderIndex}`,
+        title: t.title,
+        topicCode: t.topicCode,
+        orderIndex: t.orderIndex,
+        status: "ACTIVE",
+      })),
+    })),
+    ...(pctb.subjectCode.toLowerCase().startsWith("urd")
+      ? pctb.chapters.map((ch) => ({
+          id: `chap-book-pctb-urdu-${pctb.classLevel}-${ch.chapterNumber}`,
+          bookId: `book-pctb-urdu-${pctb.classLevel}`,
+          chapterNumber: ch.chapterNumber,
+          title: ch.title,
+          orderIndex: ch.orderIndex,
+          status: "ACTIVE",
+          topics: ch.topics.map((t) => ({
+            id: `top-book-pctb-urdu-${pctb.classLevel}-${ch.chapterNumber}-${t.orderIndex}`,
+            title: t.title,
+            topicCode: t.topicCode,
+            orderIndex: t.orderIndex,
+            status: "ACTIVE",
+          })),
+        }))
+      : []),
+  ]),
 ];
 
 const DEFAULT_BOARDS = [
@@ -159,12 +208,57 @@ const DEFAULT_SUBJECTS = [
     class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
     _count: { books: 1, samplePapers: 1 },
   },
+  {
+    id: "subj-cs-09",
+    classId: "class-9",
+    name: "Computer Science",
+    code: "CS-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-urdu-09",
+    classId: "class-9",
+    name: "Urdu Compulsory",
+    code: "URD-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-english-09",
+    classId: "class-9",
+    name: "English Compulsory",
+    code: "ENG-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-islamiat-09",
+    classId: "class-9",
+    name: "Islamic Studies / Islamiat",
+    code: "ISL-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-pakstudies-09",
+    classId: "class-9",
+    name: "Pakistan Studies",
+    code: "PAK-09",
+    status: "ACTIVE",
+    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
+    _count: { books: 1, samplePapers: 1 },
+  },
 
   // Class 10 (SSC Part-II)
   {
     id: "subj-physics-10",
     classId: "class-10",
-    name: "Physics",
+    name: "Physics (Class 10 - Bio & Computer Group)",
     code: "PHY-10",
     status: "ACTIVE",
     class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
@@ -173,7 +267,7 @@ const DEFAULT_SUBJECTS = [
   {
     id: "subj-chemistry-10",
     classId: "class-10",
-    name: "Chemistry",
+    name: "Chemistry (Class 10 - Bio & Computer Group)",
     code: "CHM-10",
     status: "ACTIVE",
     class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
@@ -182,7 +276,7 @@ const DEFAULT_SUBJECTS = [
   {
     id: "subj-biology-10",
     classId: "class-10",
-    name: "Biology",
+    name: "Biology (Class 10 - Bio Group)",
     code: "BIO-10",
     status: "ACTIVE",
     class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
@@ -191,7 +285,7 @@ const DEFAULT_SUBJECTS = [
   {
     id: "subj-math-10",
     classId: "class-10",
-    name: "Mathematics",
+    name: "Mathematics (Class 10 - Science Group)",
     code: "MTH-10",
     status: "ACTIVE",
     class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
@@ -200,8 +294,44 @@ const DEFAULT_SUBJECTS = [
   {
     id: "subj-cs-10",
     classId: "class-10",
-    name: "Computer Science",
+    name: "Computer Science (Class 10 - Computer Group)",
     code: "CS-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-urdu-10",
+    classId: "class-10",
+    name: "Urdu (Class 10 Compulsory)",
+    code: "URD-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-english-10",
+    classId: "class-10",
+    name: "English (Class 10 Compulsory)",
+    code: "ENG-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-pakstudies-10",
+    classId: "class-10",
+    name: "Pakistan Studies (Class 10 Compulsory)",
+    code: "PAK-10",
+    status: "ACTIVE",
+    class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-islamiat-10",
+    classId: "class-10",
+    name: "Islamic Studies / Islamiat (Class 10 Compulsory)",
+    code: "ISL-10",
     status: "ACTIVE",
     class: { id: "class-10", name: "Class 10 (SSC Part-II)", numericLevel: 10 },
     _count: { books: 1, samplePapers: 1 },
@@ -253,6 +383,33 @@ const DEFAULT_SUBJECTS = [
     class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
     _count: { books: 1, samplePapers: 1 },
   },
+  {
+    id: "subj-urdu-11",
+    classId: "class-11",
+    name: "Urdu Compulsory (1st Year)",
+    code: "URD-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-english-11",
+    classId: "class-11",
+    name: "English Compulsory (1st Year)",
+    code: "ENG-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-islamiat-11",
+    classId: "class-11",
+    name: "Islamic Education (1st Year Compulsory)",
+    code: "ISL-11",
+    status: "ACTIVE",
+    class: { id: "class-11", name: "1st Year / Class 11", numericLevel: 11 },
+    _count: { books: 1, samplePapers: 1 },
+  },
 
   // 2nd Year / Class 12 (Intermediate)
   {
@@ -300,6 +457,33 @@ const DEFAULT_SUBJECTS = [
     class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
     _count: { books: 1, samplePapers: 1 },
   },
+  {
+    id: "subj-urdu-12",
+    classId: "class-12",
+    name: "Urdu Compulsory (2nd Year)",
+    code: "URD-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-english-12",
+    classId: "class-12",
+    name: "English Compulsory (2nd Year)",
+    code: "ENG-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
+  {
+    id: "subj-pakstudies-12",
+    classId: "class-12",
+    name: "Pakistan Studies (2nd Year Compulsory)",
+    code: "PAK-12",
+    status: "ACTIVE",
+    class: { id: "class-12", name: "2nd Year / Class 12", numericLevel: 12 },
+    _count: { books: 1, samplePapers: 1 },
+  },
 ];
 
 const DEFAULT_BOOKS = [
@@ -340,24 +524,71 @@ const DEFAULT_BOOKS = [
     _count: { chapters: 8 },
   },
   // PCTB Official Textbooks
-  ...PCTB_OFFICIAL_CATALOG.map((pctb) => ({
-    id: pctb.id,
-    title: pctb.title,
-    edition: pctb.edition,
-    publisher: pctb.publisher,
-    author: "Punjab Curriculum and Textbook Board",
-    boardId: "board-punjab-lhr",
-    academicYearId: "year-current",
-    classId: "class-9",
-    subjectId: `subj-${pctb.subjectName.toLowerCase()}`,
-    version: "2024.1",
-    status: "ACTIVE",
-    subject: { id: `subj-${pctb.subjectName.toLowerCase()}`, name: pctb.subjectName, code: pctb.subjectCode },
-    class: { id: "class-9", name: "Class 9 (SSC Part-I)", numericLevel: 9 },
-    board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
-    academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
-    _count: { chapters: pctb.chaptersCount },
-  })),
+  ...PCTB_OFFICIAL_CATALOG.flatMap((pctb) => {
+    const classIdStr =
+      pctb.classLevel === 10
+        ? "class-10"
+        : pctb.classLevel === 11
+        ? "class-11"
+        : pctb.classLevel === 12
+        ? "class-12"
+        : "class-9";
+    const classNameStr =
+      pctb.classLevel === 10
+        ? "Class 10 (SSC Part-II)"
+        : pctb.classLevel === 11
+        ? "1st Year / Class 11"
+        : pctb.classLevel === 12
+        ? "2nd Year / Class 12"
+        : "Class 9 (SSC Part-I)";
+
+    const baseBook = {
+      id: pctb.id,
+      title: pctb.title,
+      edition: pctb.edition,
+      publisher: pctb.publisher,
+      author: "Punjab Curriculum and Textbook Board",
+      boardId: "board-punjab-lhr",
+      academicYearId: "year-current",
+      classId: classIdStr,
+      subjectId: `subj-${pctb.subjectCode.toLowerCase()}`,
+      version: "2024.1",
+      status: "ACTIVE",
+      subject: { id: `subj-${pctb.subjectCode.toLowerCase()}`, name: pctb.subjectName, code: pctb.subjectCode },
+      class: { id: classIdStr, name: classNameStr, numericLevel: pctb.classLevel },
+      board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
+      academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+      _count: { chapters: pctb.chaptersCount },
+    };
+
+    const variants = [
+      baseBook,
+      {
+        ...baseBook,
+        id: `book-pctb-${pctb.subjectCode.toLowerCase()}`,
+      },
+      {
+        ...baseBook,
+        id: `book-${pctb.subjectCode.toLowerCase()}`,
+        subjectId: pctb.subjectCode,
+      },
+    ];
+
+    if (pctb.subjectCode.toLowerCase().startsWith("urd")) {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-urdu-${pctb.classLevel}`,
+        subjectId: `subj-urdu-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-urd-${pctb.classLevel}`,
+        subjectId: `subj-urdu-${pctb.classLevel}`,
+      });
+    }
+
+    return variants;
+  }),
 ];
 
 export class EducationService {
@@ -555,15 +786,130 @@ export class EducationService {
           _count: { select: { books: true, samplePapers: true } },
         },
       });
-      if (res && res.length > 0) return res;
-      if (classId) {
-        const filtered = DEFAULT_SUBJECTS.filter((s) => s.classId === classId);
-        return filtered.length > 0 ? (filtered as any) : (DEFAULT_SUBJECTS as any);
+
+      // Determine class numeric level
+      let numericLevel: number | undefined;
+      if (res && res.length > 0 && res[0].class?.numericLevel) {
+        numericLevel = res[0].class.numericLevel;
+      } else if (classId) {
+        if (classId === "class-9" || classId.includes("9")) numericLevel = 9;
+        else if (classId === "class-10" || classId.includes("10")) numericLevel = 10;
+        else if (classId === "class-11" || classId.includes("11")) numericLevel = 11;
+        else if (classId === "class-12" || classId.includes("12")) numericLevel = 12;
+        else {
+          const cls = await prisma.class.findUnique({ where: { id: classId } }).catch(() => null);
+          numericLevel = cls?.numericLevel;
+        }
       }
+
+      const defaultForClass = numericLevel
+        ? DEFAULT_SUBJECTS.filter((s) => s.class?.numericLevel === numericLevel)
+        : classId
+        ? DEFAULT_SUBJECTS.filter((s) => s.classId === classId)
+        : DEFAULT_SUBJECTS;
+
+      if (res && res.length > 0) {
+        // Auto-heal missing compulsory subjects in database (e.g. URD-10, URD-09)
+        for (const reqSub of defaultForClass) {
+          const found = res.some(
+            (s) =>
+              s.code.toLowerCase() === reqSub.code.toLowerCase() ||
+              s.name.toLowerCase() === reqSub.name.toLowerCase()
+          );
+          if (!found) {
+            try {
+              const created = await prisma.subject.upsert({
+                where: {
+                  classId_code: {
+                    classId: classId || reqSub.classId,
+                    code: reqSub.code,
+                  },
+                },
+                update: { name: reqSub.name, status: "ACTIVE" },
+                create: {
+                  classId: classId || reqSub.classId,
+                  code: reqSub.code,
+                  name: reqSub.name,
+                  status: "ACTIVE",
+                },
+                include: {
+                  class: { select: { id: true, name: true, numericLevel: true } },
+                  _count: { select: { books: true, samplePapers: true } },
+                },
+              });
+
+              // Ensure PCTB book is also upserted
+              const pctb = PCTB_OFFICIAL_CATALOG.find(
+                (b) => b.subjectCode.toLowerCase() === reqSub.code.toLowerCase()
+              );
+              if (pctb) {
+                const book = await prisma.book.upsert({
+                  where: { id: `book-pctb-${reqSub.code.toLowerCase()}` },
+                  update: {
+                    title: pctb.title,
+                    subjectId: created.id,
+                    classId: classId || reqSub.classId,
+                    status: "ACTIVE",
+                  },
+                  create: {
+                    id: `book-pctb-${reqSub.code.toLowerCase()}`,
+                    title: pctb.title,
+                    edition: pctb.edition,
+                    publisher: pctb.publisher,
+                    author: "Punjab Curriculum and Textbook Board",
+                    boardId: "board-punjab-lhr",
+                    academicYearId: "year-current",
+                    classId: classId || reqSub.classId,
+                    subjectId: created.id,
+                    version: "2024.PCTB",
+                    status: "ACTIVE",
+                  },
+                }).catch(() => null);
+
+                if (book) {
+                  for (const ch of pctb.chapters) {
+                    await prisma.chapter.upsert({
+                      where: { id: `chap-${book.id}-${ch.chapterNumber}` },
+                      update: { title: ch.title, orderIndex: ch.orderIndex, status: "ACTIVE" },
+                      create: {
+                        id: `chap-${book.id}-${ch.chapterNumber}`,
+                        bookId: book.id,
+                        chapterNumber: ch.chapterNumber,
+                        title: ch.title,
+                        orderIndex: ch.orderIndex,
+                        status: "ACTIVE",
+                      },
+                    }).catch(() => null);
+                  }
+                }
+              }
+
+              res.push(created as any);
+            } catch {
+              res.push({
+                ...reqSub,
+                id: reqSub.id,
+                classId: classId || reqSub.classId,
+              } as any);
+            }
+          }
+        }
+        return res.sort((a, b) => a.name.localeCompare(b.name));
+      }
+
+      if (defaultForClass.length > 0) return defaultForClass as any;
       return DEFAULT_SUBJECTS as any;
     } catch {
       if (classId) {
-        const filtered = DEFAULT_SUBJECTS.filter((s) => s.classId === classId);
+        let numericLevel: number | undefined;
+        if (classId === "class-9" || classId.includes("9")) numericLevel = 9;
+        else if (classId === "class-10" || classId.includes("10")) numericLevel = 10;
+        else if (classId === "class-11" || classId.includes("11")) numericLevel = 11;
+        else if (classId === "class-12" || classId.includes("12")) numericLevel = 12;
+
+        const filtered = DEFAULT_SUBJECTS.filter(
+          (s) => s.classId === classId || (numericLevel && s.class?.numericLevel === numericLevel)
+        );
         return filtered.length > 0 ? (filtered as any) : (DEFAULT_SUBJECTS as any);
       }
       return DEFAULT_SUBJECTS as any;
@@ -623,8 +969,16 @@ export class EducationService {
 
   public static async getBooks(subjectId?: string) {
     try {
-      const res = await prisma.book.findMany({
-        where: subjectId ? { subjectId } : undefined,
+      let res = await prisma.book.findMany({
+        where: subjectId
+          ? {
+              OR: [
+                { subjectId },
+                { id: subjectId },
+                { id: `book-pctb-${subjectId.toLowerCase()}` },
+              ],
+            }
+          : undefined,
         orderBy: [{ title: "asc" }, { version: "desc" }],
         include: {
           subject: { select: { id: true, name: true, code: true } },
@@ -635,10 +989,125 @@ export class EducationService {
         },
       });
       if (res && res.length > 0) return res;
+
+      // Identify subject details if subjectId is provided
+      let subj = DEFAULT_SUBJECTS.find(
+        (s) => s.id === subjectId || s.code.toLowerCase() === subjectId?.toLowerCase()
+      );
+      let dbSubject: any = null;
+      if (!subj && subjectId) {
+        dbSubject = await prisma.subject.findUnique({
+          where: { id: subjectId },
+          include: { class: true },
+        }).catch(() => null);
+        if (dbSubject) {
+          subj = {
+            id: dbSubject.id,
+            classId: dbSubject.classId,
+            name: dbSubject.name,
+            code: dbSubject.code,
+            status: "ACTIVE",
+            class: dbSubject.class as any,
+          } as any;
+        }
+      }
+
       if (subjectId) {
-        const matches = DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId);
+        // Find matching book in PCTB Official Catalog first
+        const subjCode = subj?.code || subjectId;
+        const subjName = subj?.name || "";
+        const pctb = PCTB_OFFICIAL_CATALOG.find((b) =>
+          b.id.toLowerCase() === subjectId.toLowerCase() ||
+          b.subjectCode.toLowerCase() === subjCode.toLowerCase() ||
+          subjCode.toLowerCase().includes(b.subjectCode.toLowerCase()) ||
+          b.subjectCode.toLowerCase().includes(subjCode.toLowerCase()) ||
+          (subjName && b.subjectName.toLowerCase().includes(subjName.toLowerCase())) ||
+          (subjName && subjName.toLowerCase().includes(b.subjectName.toLowerCase()))
+        );
+
+        if (pctb) {
+          const classIdStr =
+            pctb.classLevel === 10
+              ? "class-10"
+              : pctb.classLevel === 11
+              ? "class-11"
+              : pctb.classLevel === 12
+              ? "class-12"
+              : "class-9";
+
+          const pctbBook = {
+            id: `book-pctb-${pctb.subjectCode.toLowerCase()}`,
+            title: pctb.title,
+            edition: pctb.edition,
+            publisher: pctb.publisher,
+            author: "Punjab Curriculum and Textbook Board",
+            boardId: "board-punjab-lhr",
+            academicYearId: "year-current",
+            classId: subj?.classId || classIdStr,
+            subjectId,
+            version: "2024.PCTB",
+            status: "ACTIVE",
+            subject: subj || { id: subjectId, name: pctb.subjectName, code: pctb.subjectCode },
+            class: subj?.class || { id: classIdStr, name: `Class ${pctb.classLevel}`, numericLevel: pctb.classLevel },
+            board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
+            academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+            _count: { chapters: pctb.chaptersCount },
+          };
+
+          // Proactively upsert into Prisma so that future database calls find it
+          if (dbSubject || subjectId) {
+            prisma.book.upsert({
+              where: { id: pctbBook.id },
+              update: {
+                title: pctbBook.title,
+                subjectId,
+                classId: pctbBook.classId,
+                status: "ACTIVE",
+              },
+              create: {
+                id: pctbBook.id,
+                title: pctbBook.title,
+                edition: pctbBook.edition,
+                publisher: pctbBook.publisher,
+                author: pctbBook.author,
+                boardId: pctbBook.boardId,
+                academicYearId: pctbBook.academicYearId,
+                classId: pctbBook.classId,
+                subjectId,
+                version: pctbBook.version,
+                status: "ACTIVE",
+              },
+            }).then(async (createdBook) => {
+              for (const ch of pctb.chapters) {
+                await prisma.chapter.upsert({
+                  where: { id: `chap-${createdBook.id}-${ch.chapterNumber}` },
+                  update: { title: ch.title, orderIndex: ch.orderIndex, status: "ACTIVE" },
+                  create: {
+                    id: `chap-${createdBook.id}-${ch.chapterNumber}`,
+                    bookId: createdBook.id,
+                    chapterNumber: ch.chapterNumber,
+                    title: ch.title,
+                    orderIndex: ch.orderIndex,
+                    status: "ACTIVE",
+                  },
+                }).catch(() => null);
+              }
+            }).catch(() => null);
+          }
+
+          return [pctbBook] as any;
+        }
+
+        const matches = DEFAULT_BOOKS.filter(
+          (b) =>
+            b.subjectId === subjectId ||
+            (subj && b.subjectId === subj.id) ||
+            (subj && b.subject?.code?.toLowerCase() === subj.code.toLowerCase()) ||
+            b.id === `book-pctb-${subjectId.toLowerCase()}` ||
+            b.id === `pctb-${subjectId.toLowerCase()}`
+        );
         if (matches.length > 0) return matches as any;
-        const subj = DEFAULT_SUBJECTS.find((s) => s.id === subjectId);
+
         return [
           {
             id: `book-${subjectId}`,
@@ -663,9 +1132,53 @@ export class EducationService {
       return DEFAULT_BOOKS as any;
     } catch {
       if (subjectId) {
-        const matches = DEFAULT_BOOKS.filter((b) => b.subjectId === subjectId);
+        const cleanSubId = subjectId.toLowerCase();
+        const pctb = PCTB_OFFICIAL_CATALOG.find((b) =>
+          b.id.toLowerCase() === cleanSubId ||
+          b.subjectCode.toLowerCase() === cleanSubId ||
+          cleanSubId.includes(b.subjectCode.toLowerCase()) ||
+          cleanSubId.includes(b.id.toLowerCase())
+        );
+        if (pctb) {
+          const classIdStr =
+            pctb.classLevel === 10
+              ? "class-10"
+              : pctb.classLevel === 11
+              ? "class-11"
+              : pctb.classLevel === 12
+              ? "class-12"
+              : "class-9";
+
+          return [
+            {
+              id: `book-pctb-${pctb.subjectCode.toLowerCase()}`,
+              title: pctb.title,
+              edition: pctb.edition,
+              publisher: pctb.publisher,
+              author: "Punjab Curriculum and Textbook Board",
+              boardId: "board-punjab-lhr",
+              academicYearId: "year-current",
+              classId: classIdStr,
+              subjectId,
+              version: "2024.PCTB",
+              status: "ACTIVE",
+              subject: { id: subjectId, name: pctb.subjectName, code: pctb.subjectCode },
+              class: { id: classIdStr, name: `Class ${pctb.classLevel}`, numericLevel: pctb.classLevel },
+              board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
+              academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+              _count: { chapters: pctb.chaptersCount },
+            },
+          ] as any;
+        }
+
+        const matches = DEFAULT_BOOKS.filter(
+          (b) =>
+            b.subjectId === subjectId ||
+            b.id === `book-pctb-${cleanSubId}` ||
+            b.id === `pctb-${cleanSubId}`
+        );
         if (matches.length > 0) return matches as any;
-        const subj = DEFAULT_SUBJECTS.find((s) => s.id === subjectId);
+        const subj = DEFAULT_SUBJECTS.find((s) => s.id === subjectId || s.code.toLowerCase() === cleanSubId);
         return [
           {
             id: `book-${subjectId}`,
@@ -710,12 +1223,79 @@ export class EducationService {
           },
         },
       });
-      if (book) return book;
+      if (book && book.chapters && book.chapters.length > 0) return book;
+
+      const cleanId = id.toLowerCase();
+      const pctb = PCTB_OFFICIAL_CATALOG.find(
+        (b) =>
+          b.id.toLowerCase() === cleanId ||
+          cleanId.includes(b.id.toLowerCase()) ||
+          cleanId.includes(b.subjectCode.toLowerCase()) ||
+          cleanId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
+          (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase())
+      );
+
+      if (pctb) {
+        const chaptersList = pctb.chapters.map((ch) => ({
+          id: `chap-${id}-${ch.chapterNumber}`,
+          bookId: id,
+          chapterNumber: ch.chapterNumber,
+          title: ch.title,
+          orderIndex: ch.orderIndex,
+          status: "ACTIVE",
+          topics: ch.topics.map((t) => ({
+            id: `top-${id}-${ch.chapterNumber}-${t.orderIndex}`,
+            title: t.title,
+            topicCode: t.topicCode,
+            orderIndex: t.orderIndex,
+            status: "ACTIVE",
+          })),
+        }));
+
+        if (book) {
+          return {
+            ...book,
+            chapters: chaptersList,
+          } as any;
+        }
+
+        const classIdStr =
+          pctb.classLevel === 10
+            ? "class-10"
+            : pctb.classLevel === 11
+            ? "class-11"
+            : pctb.classLevel === 12
+            ? "class-12"
+            : "class-9";
+
+        return {
+          id,
+          title: pctb.title,
+          edition: pctb.edition,
+          publisher: pctb.publisher,
+          author: "Punjab Curriculum and Textbook Board",
+          boardId: "board-punjab-lhr",
+          academicYearId: "year-current",
+          classId: classIdStr,
+          subjectId: `subj-${pctb.subjectCode.toLowerCase()}`,
+          version: "2024.PCTB",
+          status: "ACTIVE",
+          subject: { id: `subj-${pctb.subjectCode.toLowerCase()}`, name: pctb.subjectName, code: pctb.subjectCode },
+          class: { id: classIdStr, name: `Class ${pctb.classLevel}`, numericLevel: pctb.classLevel },
+          board: { id: "board-punjab-lhr", name: "BISE Lahore", code: "BISE_LHR" },
+          academicYear: { id: "year-current", name: "Session 2024-2025", code: "2024-2025" },
+          chapters: chaptersList,
+          _count: { chapters: pctb.chaptersCount },
+        } as any;
+      }
+
       const fb = DEFAULT_BOOKS.find((b) => b.id === id) || DEFAULT_BOOKS[0];
-      return { ...fb, chapters: DEFAULT_CHAPTERS } as any;
+      const chapters = DEFAULT_CHAPTERS.filter((c) => c.bookId === fb.id);
+      return { ...fb, chapters: chapters.length > 0 ? chapters : DEFAULT_CHAPTERS } as any;
     } catch {
       const fb = DEFAULT_BOOKS.find((b) => b.id === id) || DEFAULT_BOOKS[0];
-      return { ...fb, chapters: DEFAULT_CHAPTERS } as any;
+      const chapters = DEFAULT_CHAPTERS.filter((c) => c.bookId === fb.id);
+      return { ...fb, chapters: chapters.length > 0 ? chapters : DEFAULT_CHAPTERS } as any;
     }
   }
 
@@ -724,6 +1304,7 @@ export class EducationService {
       const book = await prisma.book.findUnique({
         where: { id: bookId },
         include: {
+          subject: true,
           chapters: {
             orderBy: { orderIndex: "asc" },
             include: {
@@ -735,8 +1316,61 @@ export class EducationService {
         },
       });
       if (book && book.chapters && book.chapters.length > 0) return book.chapters;
-      const matches = DEFAULT_CHAPTERS.filter((c) => c.bookId === bookId);
+
+      const cleanBookId = bookId.toLowerCase();
+      const pctb = PCTB_OFFICIAL_CATALOG.find(
+        (b) =>
+          b.id.toLowerCase() === cleanBookId ||
+          cleanBookId.includes(b.id.toLowerCase()) ||
+          cleanBookId.includes(b.subjectCode.toLowerCase()) ||
+          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
+          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("urd-", "urdu-")}` ||
+          (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase()) ||
+          (book?.title && book.title.toLowerCase().includes(b.subjectName.toLowerCase()))
+      );
+
+      if (pctb) {
+        const chaptersList = pctb.chapters.map((ch) => ({
+          id: `chap-${bookId}-${ch.chapterNumber}`,
+          bookId,
+          chapterNumber: ch.chapterNumber,
+          title: ch.title,
+          orderIndex: ch.orderIndex,
+          status: "ACTIVE",
+          topics: ch.topics.map((t) => ({
+            id: `top-${bookId}-${ch.chapterNumber}-${t.orderIndex}`,
+            title: t.title,
+            topicCode: t.topicCode,
+            orderIndex: t.orderIndex,
+            status: "ACTIVE",
+          })),
+        }));
+
+        if (book) {
+          for (const ch of pctb.chapters) {
+            await prisma.chapter.upsert({
+              where: { id: `chap-${book.id}-${ch.chapterNumber}` },
+              update: { title: ch.title, orderIndex: ch.orderIndex, status: "ACTIVE" },
+              create: {
+                id: `chap-${book.id}-${ch.chapterNumber}`,
+                bookId: book.id,
+                chapterNumber: ch.chapterNumber,
+                title: ch.title,
+                orderIndex: ch.orderIndex,
+                status: "ACTIVE",
+              },
+            }).catch(() => null);
+          }
+        }
+
+        return chaptersList as any;
+      }
+
+      const matches = DEFAULT_CHAPTERS.filter(
+        (c) => c.bookId === bookId || c.bookId === `book-pctb-${cleanBookId}`
+      );
       if (matches.length > 0) return matches as any;
+
       return Array.from({ length: 8 }, (_, i) => ({
         id: `chap-${bookId}-${i + 1}`,
         bookId,
@@ -762,6 +1396,32 @@ export class EducationService {
         ],
       })) as any;
     } catch {
+      const cleanBookId = bookId.toLowerCase();
+      const pctb = PCTB_OFFICIAL_CATALOG.find(
+        (b) =>
+          b.id.toLowerCase() === cleanBookId ||
+          cleanBookId.includes(b.id.toLowerCase()) ||
+          cleanBookId.includes(b.subjectCode.toLowerCase()) ||
+          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}`
+      );
+      if (pctb) {
+        return pctb.chapters.map((ch) => ({
+          id: `chap-${bookId}-${ch.chapterNumber}`,
+          bookId,
+          chapterNumber: ch.chapterNumber,
+          title: ch.title,
+          orderIndex: ch.orderIndex,
+          status: "ACTIVE",
+          topics: ch.topics.map((t) => ({
+            id: `top-${bookId}-${ch.chapterNumber}-${t.orderIndex}`,
+            title: t.title,
+            topicCode: t.topicCode,
+            orderIndex: t.orderIndex,
+            status: "ACTIVE",
+          })),
+        })) as any;
+      }
+
       const matches = DEFAULT_CHAPTERS.filter((c) => c.bookId === bookId);
       if (matches.length > 0) return matches as any;
       return Array.from({ length: 8 }, (_, i) => ({
