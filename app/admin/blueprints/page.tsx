@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import {
   Layers,
@@ -117,16 +117,24 @@ export default function AdminBlueprintsPage() {
   }, []);
 
   // Filtered dropdowns
-  const availableSyllabi = syllabi.filter(
-    (s) =>
-      (!selectedSubject || s.subjectId === selectedSubject) &&
-      (!selectedClass || s.classId === selectedClass)
+  const availableSyllabi = useMemo(
+    () =>
+      syllabi.filter(
+        (s) =>
+          (!selectedSubject || s.subjectId === selectedSubject) &&
+          (!selectedClass || s.classId === selectedClass)
+      ),
+    [syllabi, selectedSubject, selectedClass]
   );
 
-  const availableBooks = books.filter(
-    (b) =>
-      (!selectedSubject || b.subjectId === selectedSubject) &&
-      (!selectedClass || b.classId === selectedClass)
+  const availableBooks = useMemo(
+    () =>
+      books.filter(
+        (b) =>
+          (!selectedSubject || b.subjectId === selectedSubject) &&
+          (!selectedClass || b.classId === selectedClass)
+      ),
+    [books, selectedSubject, selectedClass]
   );
 
   // Dynamically update blueprint title when Subject/Class changes
@@ -151,7 +159,7 @@ export default function AdminBlueprintsPage() {
     } else {
       setSelectedSyllabus("");
     }
-  }, [selectedSubject, selectedClass, syllabi]);
+  }, [availableSyllabi, selectedSyllabus]);
 
   // Difficulty presets
   const applyDifficultyPreset = (easy: number, med: number, diff: number) => {
