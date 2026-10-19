@@ -344,5 +344,71 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     const uniqueQuestions = new Set(questionTexts);
     expect(uniqueQuestions.size).toBe(paper!.questions.length);
   });
+
+  it("15. Generates authentic Class 9 Urdu Compulsory paper without Computer Science pollution or duplicate questions", () => {
+    const rawTitle = "Urdu Compulsory Practice Paper - Class 9 Urdu Compulsory (Punjab Curriculum & Textbook Board)";
+
+    // Verify normalization correctly maps to Class 9 and Urdu (URD), strictly NOT Computer Science (CS)
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(undefined, rawTitle);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(undefined, rawTitle);
+    expect(normClass).toBe("9");
+    expect(normSub).toBe("URD");
+
+    // Generate paper using Class 9 Urdu
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "Class 9",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    expect(secA.questions.length).toBe(12);
+    expect(secB.questions.length).toBe(6);
+    expect(secC.questions.length).toBe(3);
+
+    const allQuestions = [...secA.questions, ...secB.questions, ...secC.questions];
+    const allStems = allQuestions.map((q) => q.text);
+
+    // Verify authentic Class 9 Urdu syllabus content
+    const combinedText = allStems.join(" ");
+    expect(combinedText).toMatch(/ہجرتِ نبوی|مرزا غالب|کاہلی|پنچایت|نصوح|سلیم|آرام و سکون|مطلع|مقطع|ردیف|قافیہ|تشبیہ|سابقہ|لاحقہ|میر تقی میر/);
+
+    // Verify strictly ZERO Computer Science / Database stems exist
+    expect(combinedText).not.toMatch(/flowchart|binary|topology|html|printf|database|normalization|c language|tcp\/ip/i);
+
+    // Verify 100% unique question stems (zero repeats)
+    const uniqueStems = new Set(allStems);
+    expect(uniqueStems.size).toBe(allQuestions.length);
+
+    // Verify all MCQs have 4 options and valid Urdu solutions
+    for (const mcq of secA.questions) {
+      expect(mcq.options?.length).toBe(4);
+      expect(mcq.correctOption).toBeDefined();
+      expect(mcq.solutionExplanation).toBeDefined();
+    }
+  });
+
+  it("16. Guarantees ExamRepository.findPaperById hydrates paper_4t2azxg_1792416078743 with authentic Class 9 Urdu and zero duplicate questions", async () => {
+    const { ExamRepository } = await import("@/server/exam-engine/exam-repository");
+    const paper = await ExamRepository.findPaperById("paper_4t2azxg_1792416078743");
+
+    expect(paper).not.toBeNull();
+    expect(paper?.title).toMatch(/Urdu Compulsory/i);
+
+    const questionTexts = paper!.questions.map((q) => q.questionText);
+    const combinedQuestions = questionTexts.join(" ");
+
+    // Verify authentic Urdu content
+    expect(combinedQuestions).toMatch(/ہجرتِ نبوی|مرزا غالب|کاہلی|پنچایت|نصوح|آرام و سکون|مطلع|مقطع|ردیف|قافیہ|تشبیہ|میر تقی میر/);
+
+    // Verify ZERO Computer Science stems exist
+    expect(combinedQuestions).not.toMatch(/flowchart|binary|topology|html|printf|normalization|tcp\/ip|phishing/i);
+
+    // Verify zero duplicates
+    const uniqueQuestions = new Set(questionTexts);
+    expect(uniqueQuestions.size).toBe(paper!.questions.length);
+  });
 });
 

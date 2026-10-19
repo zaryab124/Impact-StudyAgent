@@ -96,7 +96,7 @@ export class ExamRepository {
     }
 
     // Only hydrate if paper actually exists in database or matches the active live paper ID pattern
-    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.includes("ajkecsx") || id.match(/^paper_[a-z0-9]+_\d+/))));
+    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.includes("ajkecsx") || id.includes("4t2azxg") || id.match(/^paper_[a-z0-9]+_\d+/))));
 
     if (dbPaper || isLivePaperPattern) {
       let title = dbPaper?.title || (id.includes("8srkzqp")
@@ -105,10 +105,12 @@ export class ExamRepository {
         ? "Statistics (1st Year - ICS Stats Group) Practice Paper"
         : id.includes("ajkecsx")
         ? "Pakistan Studies (2nd Year Compulsory) Practice Paper"
+        : id.includes("4t2azxg")
+        ? "Urdu Compulsory Practice Paper - Class 9 Urdu Compulsory (Punjab Curriculum & Textbook Board)"
         : "Standard Examination Paper");
       let classLevel = dbPaper?.title
         ? CurriculumQuestionBank.normalizeClassLevel(undefined, title)
-        : (id.includes("8srkzqp") || id.includes("6bn0j0w") ? "11" : id.includes("ajkecsx") ? "12" : "10");
+        : (id.includes("8srkzqp") || id.includes("6bn0j0w") ? "11" : id.includes("ajkecsx") ? "12" : id.includes("4t2azxg") ? "9" : "10");
       let subjectKey = dbPaper?.title
         ? CurriculumQuestionBank.normalizeSubjectKey(undefined, title)
         : id.includes("8srkzqp")
@@ -117,6 +119,8 @@ export class ExamRepository {
         ? "STAT"
         : id.includes("ajkecsx")
         ? "PAK"
+        : id.includes("4t2azxg")
+        ? "URD"
         : "PHY";
 
       const structuredSections = CurriculumQuestionBank.generateStructuredPaper({

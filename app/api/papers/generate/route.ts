@@ -161,12 +161,6 @@ export async function POST(req: NextRequest) {
     if (bankPool.length === 0) {
       bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === normSub);
     }
-    if (bankPool.length === 0) {
-      bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.classLevel === normClass);
-    }
-    if (bankPool.length === 0) {
-      bankPool = CURRICULUM_QUESTION_REGISTRY;
-    }
 
     const usedQuestionIds = new Set<string>();
     const usedQuestionTexts = new Set<string>();
@@ -176,9 +170,6 @@ export async function POST(req: NextRequest) {
       let candidateItems = bankPool.filter((q) => q.type === sc.questionType);
       if (candidateItems.length === 0) {
         candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType && q.subjectKey === normSub);
-      }
-      if (candidateItems.length === 0) {
-        candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType);
       }
 
       for (let i = 0; i < sc.count; i++) {

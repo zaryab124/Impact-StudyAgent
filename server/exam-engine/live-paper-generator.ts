@@ -27,6 +27,7 @@ import { calculateDifficultyDistribution } from "@/lib/blueprint/calculator";
 import { SyllabusGate } from "@/server/retrieval/syllabus-gate";
 import { prisma } from "@/lib/db";
 import { CurriculumQuestionBank, CURRICULUM_QUESTION_REGISTRY } from "@/server/exam-engine/curriculum-question-bank";
+import { PakistanCurriculumService } from "@/server/curriculum/pakistan-curriculum-registry";
 
 export interface LivePaperGenerationConfig {
   boardId: string;
@@ -180,6 +181,7 @@ export class LivePaperGenerator {
 
       const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId, config.title);
       const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId, config.title);
+      const officialChapters = PakistanCurriculumService.getChapters(normClass, normSub);
       let subQuestions = CURRICULUM_QUESTION_REGISTRY.filter(
         (q) => q.classLevel === normClass && q.subjectKey === normSub
       );
@@ -194,8 +196,9 @@ export class LivePaperGenerator {
             slotSeq <= dist.easy ? "EASY" : slotSeq <= dist.easy + dist.medium ? "MEDIUM" : "DIFFICULT";
 
           const subQ = subQuestions.length > 0 ? subQuestions[(slotSeq - 1) % subQuestions.length] : undefined;
-          const chapterTitle = subQ?.chapterTitle || `Chapter ${chapId}`;
-          const topicTitle = subQ?.topicTitle || `${chapterTitle} Core Concepts`;
+          const offChap = officialChapters.length > 0 ? officialChapters[(slotSeq - 1) % officialChapters.length] : undefined;
+          const chapterTitle = subQ?.chapterTitle || offChap?.title || `Chapter ${chapId}`;
+          const topicTitle = subQ?.topicTitle || (offChap?.keyTopics && offChap.keyTopics[(slotSeq - 1) % offChap.keyTopics.length]) || `${chapterTitle} Core Concepts`;
 
           slots.push({
             id: `slot_${bpId}_${slotSeq}`,
@@ -332,11 +335,6 @@ export class LivePaperGenerator {
         if (bankItems.length === 0) {
           bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
             (q) => q.type === slot.questionType && q.subjectKey === normSub
-          );
-        }
-        if (bankItems.length === 0) {
-          bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
-            (q) => q.type === slot.questionType
           );
         }
 

@@ -788,16 +788,27 @@ export class PakistanCurriculumService {
   public static normalizeSubject(sub?: string): string {
     if (!sub) return "PHY";
     const s = sub.toUpperCase();
-    if (s.includes("PAK") || s.includes("PST") || s.includes("MUTALIA") || s.includes("PAKISTAN")) return "PAK";
+    if (s.includes("URDU") || /\bURD\b/.test(s) || s.includes("URD-")) return "URD";
+    if (s.includes("ENGLISH") || /\bENG\b/.test(s) || s.includes("ENG-")) return "ENG";
+    if (s.includes("ISLAMIAT") || s.includes("ISLAMIYAT") || s.includes("ISLAMIC") || /\bISL\b/.test(s)) return "ISL";
+    if (s.includes("PAKISTAN") || /\bPAK\b/.test(s) || /\bPST\b/.test(s) || s.includes("MUTALIA")) return "PAK";
     if (s.includes("STAT")) return "STAT";
-    if (s.includes("PHY")) return "PHY";
-    if (s.includes("CHM") || s.includes("CHEM")) return "CHM";
-    if (s.includes("BIO")) return "BIO";
-    if (s.includes("MTH") || s.includes("MATH")) return "MTH";
-    if (s.includes("CS") || s.includes("COMP")) return "CS";
-    if (s.includes("ENG")) return "ENG";
-    if (s.includes("URD")) return "URD";
-    if (s.includes("ISL")) return "ISL";
+    if (s.includes("MATH") || /\bMTH\b/.test(s)) return "MTH";
+    if (s.includes("PHYSIC") || /\bPHY\b/.test(s)) return "PHY";
+    if (s.includes("CHEM") || /\bCHM\b/.test(s)) return "CHM";
+    if (s.includes("BIOLOG") || /\bBIO\b/.test(s)) return "BIO";
+    if (
+      s.includes("COMPUTER") ||
+      /\bCOMP\s*SCI/.test(s) ||
+      /\bCS\b/.test(s) ||
+      s.includes("CS-") ||
+      s.includes("CS09") ||
+      s.includes("CS10") ||
+      s.includes("CS11") ||
+      s.includes("CS12") ||
+      (/\bICS\b/.test(s) && !s.includes("STAT") && !s.includes("MATH") && !/\bMTH\b/.test(s))
+    ) return "CS";
+    if (s.includes("ECO") || s.includes("ECONOMICS")) return "ECO";
     return "PHY";
   }
 }
