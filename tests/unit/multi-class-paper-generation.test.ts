@@ -242,5 +242,44 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     // Verify Class 10 Math concepts (Quadratic equation, Discriminant, Alternando, Radian, Factorization)
     expect(allStems).toMatch(/quadratic|discriminant|alternando|factorization|cube roots/i);
   });
+
+  it("12. Generates authentic Statistics (1st Year - ICS Stats Group) Practice Paper without Computer Science pollution", () => {
+    const rawTitle = "Statistics (1st Year - ICS Stats Group) Practice Paper - Statistics (1st Year - ICS Stats Group) (Punjab Curriculum & Textbook Board)";
+
+    // Verify normalization maps to 1st Year (11) and Statistics (STAT), NOT Computer Science (CS)
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(undefined, rawTitle);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(undefined, rawTitle);
+    expect(normClass).toBe("11");
+    expect(normSub).toBe("STAT");
+
+    // Generate paper using 1st Year Statistics
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "1st Year",
+      subjectName: "Statistics",
+      totalMarks: 60,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    const allStems = [
+      ...secA.questions.map((q) => q.text),
+      ...secB.questions.map((q) => q.text),
+      ...secC.questions.map((q) => q.text),
+    ].join(" ");
+
+    // Verify authentic 1st Year Statistics topics
+    expect(allStems).toMatch(/parameter|statistic|ogive|arithmetic mean|dispersion|standard deviation|binomial|probability|variance/i);
+
+    // Verify zero Computer Science stems appear
+    expect(allStems).not.toMatch(/flowchart|binary|topology|html|printf|switch|database|c language/i);
+
+    // Verify MCQs have 4 options and valid solutions
+    for (const mcq of secA.questions) {
+      expect(mcq.options?.length).toBe(4);
+      expect(mcq.correctOption).toBeDefined();
+      expect(mcq.solutionExplanation).toBeDefined();
+    }
+  });
 });
 

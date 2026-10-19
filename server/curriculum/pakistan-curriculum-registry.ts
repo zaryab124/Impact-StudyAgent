@@ -593,6 +593,23 @@ export const PAKISTAN_CURRICULUM_REGISTRY: SubjectCurriculum[] = [
       { chapterNumber: 6, title: "Security, Copyright and the Law", keyTopics: ["Security Threats (Virus, Worm, Trojan Horse)", "Antivirus Protection", "Data Privacy and Copyright Infringement Laws"] },
     ],
   },
+  {
+    classLevel: "11",
+    subjectKey: "STAT",
+    subjectName: "Statistics",
+    totalMarksBoard: 85,
+    timeAllowedMinutes: 180,
+    chapters: [
+      { chapterNumber: 1, title: "Introduction to Statistics", keyTopics: ["Population and Sample", "Parameter and Statistic", "Discrete and Continuous Variables", "Primary and Secondary Data", "Scales of Measurement"] },
+      { chapterNumber: 2, title: "Representation of Data", keyTopics: ["Classification and Tabulation", "Frequency Distribution (Class Limits, Class Boundaries)", "Histogram and Frequency Polygon", "Cumulative Frequency Curve (Ogive)", "Pie Chart"] },
+      { chapterNumber: 3, title: "Measures of Central Tendency", keyTopics: ["Arithmetic Mean: Direct and Short-cut Methods", "Properties of Arithmetic Mean", "Median for Ungrouped and Grouped Data", "Mode and Empirical Relation (Mean - Mode = 3(Mean - Median))", "Geometric Mean and Harmonic Mean"] },
+      { chapterNumber: 4, title: "Measures of Dispersion", keyTopics: ["Range and Coefficient of Range", "Quartile Deviation and Semi-Interquartile Range", "Mean Deviation from Mean and Median", "Variance and Standard Deviation", "Coefficient of Variation (C.V = (S / X̄) * 100%)"] },
+      { chapterNumber: 5, title: "Index Numbers", keyTopics: ["Simple and Composite Index Numbers", "Laspeyre's, Paasche's, and Fisher's Ideal Index", "Consumer Price Index (CPI)", "Tests of Consistency"] },
+      { chapterNumber: 6, title: "Probability", keyTopics: ["Random Experiment and Sample Space", "Events: Mutually Exclusive, Independent, Exhaustive", "Classical and Relative Frequency Probability", "Addition Law of Probability", "Multiplication Law of Probability"] },
+      { chapterNumber: 7, title: "Random Variables", keyTopics: ["Discrete and Continuous Random Variables", "Probability Mass Function P(X = x)", "Expected Value E(X)", "Variance of Random Variable Var(X) = E(X²) - [E(X)]²"] },
+      { chapterNumber: 8, title: "Binomial and Hypergeometric Distributions", keyTopics: ["Bernoulli Trials", "Binomial Distribution P(X = x) = ⁿCₓ pˣ qⁿ⁻ˣ", "Mean and Variance of Binomial Distribution (μ = np, σ² = npq)", "Hypergeometric Distribution"] },
+    ],
+  },
 
   // ============================================================================
   // 2ND YEAR / CLASS 12 (HSSC PART-II)

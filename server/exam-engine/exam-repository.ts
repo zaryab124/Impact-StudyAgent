@@ -96,14 +96,24 @@ export class ExamRepository {
     }
 
     // Only hydrate if paper actually exists in database or matches the active live paper ID pattern
-    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.match(/^paper_[a-z0-9]+_\d+/))));
+    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.match(/^paper_[a-z0-9]+_\d+/))));
 
     if (dbPaper || isLivePaperPattern) {
       let title = dbPaper?.title || (id.includes("8srkzqp")
         ? "Mathematics (1st Year - Pre-Engineering & ICS) Practice Paper"
+        : id.includes("6bn0j0w")
+        ? "Statistics (1st Year - ICS Stats Group) Practice Paper"
         : "Standard Examination Paper");
-      let classLevel = dbPaper?.title ? CurriculumQuestionBank.normalizeClassLevel(title) : (id.includes("8srkzqp") ? "11" : "10");
-      let subjectKey = dbPaper?.title ? CurriculumQuestionBank.normalizeSubjectKey(title) : (id.includes("8srkzqp") ? "MTH" : "PHY");
+      let classLevel = dbPaper?.title
+        ? CurriculumQuestionBank.normalizeClassLevel(title)
+        : (id.includes("8srkzqp") || id.includes("6bn0j0w") ? "11" : "10");
+      let subjectKey = dbPaper?.title
+        ? CurriculumQuestionBank.normalizeSubjectKey(title)
+        : id.includes("8srkzqp")
+        ? "MTH"
+        : id.includes("6bn0j0w")
+        ? "STAT"
+        : "PHY";
 
       const structuredSections = CurriculumQuestionBank.generateStructuredPaper({
         className: classLevel,
