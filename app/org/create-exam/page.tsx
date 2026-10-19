@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,6 +13,11 @@ import {
   AlertCircle,
   FileCheck2,
   Sparkles,
+  BookOpen,
+  Layers,
+  Bot,
+  Clock,
+  ListChecks,
 } from "lucide-react";
 import { RouteGuard } from "@/components/auth/RouteGuard";
 
@@ -190,6 +195,13 @@ function getSubjectsForClassAndGroup(className: string, groupName: string): { co
   ];
 }
 
+interface CurriculumChapterItem {
+  chapterNumber: number;
+  title: string;
+  urduTitle?: string;
+  keyTopics: string[];
+}
+
 function CreateOrgExamContent() {
   const router = useRouter();
 
@@ -199,15 +211,52 @@ function CreateOrgExamContent() {
   const [groupName, setGroupName] = useState("Science (Computer Science Group)");
   const [subjectCode, setSubjectCode] = useState("CS-10");
   const [totalMarks, setTotalMarks] = useState("60");
+  const [timeAllowedMinutes, setTimeAllowedMinutes] = useState("120");
+  const [testType, setTestType] = useState("CHAPTER_WISE");
   const [instructions, setInstructions] = useState(
     "Time Allowed: 2 Hours. Total Marks: 60. Write roll number clearly on top. Attempt all compulsory sections."
   );
+
+  // Curriculum Chapters state
+  const [chapters, setChapters] = useState<CurriculumChapterItem[]>([]);
+  const [selectedChapters, setSelectedChapters] = useState<number[]>([]);
+  const [loadingChapters, setLoadingChapters] = useState(false);
+
+  // AI Generation state
+  const [useAi, setUseAi] = useState(false);
+  const [apiKey, setApiKey] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdSeries, setCreatedSeries] = useState<any | null>(null);
 
   const availableSubjects = getSubjectsForClassAndGroup(className, groupName);
+
+  // Fetch chapters whenever class or subject changes
+  useEffect(() => {
+    async function loadChapters() {
+      setLoadingChapters(true);
+      try {
+        const res = await fetch(
+          `/api/curriculum/chapters?class=${encodeURIComponent(className)}&subject=${encodeURIComponent(subjectCode)}`
+        );
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data?.chapters)) {
+          setChapters(json.data.chapters);
+          // By default, select all chapters
+          setSelectedChapters(json.data.chapters.map((c: CurriculumChapterItem) => c.chapterNumber));
+        } else {
+          setChapters([]);
+          setSelectedChapters([]);
+        }
+      } catch (err) {
+        console.error("Failed to load curriculum chapters:", err);
+      } finally {
+        setLoadingChapters(false);
+      }
+    }
+    loadChapters();
+  }, [className, subjectCode]);
 
   const handleClassChange = (newClass: string) => {
     setClassName(newClass);
@@ -225,6 +274,32 @@ function CreateOrgExamContent() {
     const subs = getSubjectsForClassAndGroup(className, newGroup);
     if (subs.length > 0) {
       setSubjectCode(subs[0].code);
+    }
+  };
+
+  const selectAllChapters = () => {
+    setSelectedChapters(chapters.map((c) => c.chapterNumber));
+  };
+
+  const selectFirstHalf = () => {
+    const half = Math.ceil(chapters.length / 2);
+    setSelectedChapters(chapters.slice(0, half).map((c) => c.chapterNumber));
+  };
+
+  const selectSecondHalf = () => {
+    const half = Math.ceil(chapters.length / 2);
+    setSelectedChapters(chapters.slice(half).map((c) => c.chapterNumber));
+  };
+
+  const clearChapters = () => {
+    setSelectedChapters([]);
+  };
+
+  const toggleChapter = (num: number) => {
+    if (selectedChapters.includes(num)) {
+      setSelectedChapters(selectedChapters.filter((n) => n !== num));
+    } else {
+      setSelectedChapters([...selectedChapters, num].sort((a, b) => a - b));
     }
   };
 
@@ -247,7 +322,15 @@ function CreateOrgExamContent() {
           subjectCode: selSub?.code || subjectCode,
           subjectName: selSub?.name || "Subject",
           totalMarks: parseInt(totalMarks, 10),
+          timeAllowedMinutes: parseInt(timeAllowedMinutes, 10),
+          testType,
           instructions,
+          chapterNumbers: selectedChapters,
+          chapterTitles: selectedChapters
+            .map((n) => chapters.find((c) => c.chapterNumber === n)?.title)
+            .filter(Boolean),
+          useAi,
+          apiKey: apiKey.trim() || undefined,
         }),
       });
 
@@ -264,7 +347,6 @@ function CreateOrgExamContent() {
     }
   };
 
-
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 space-y-6">
       <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
@@ -275,11 +357,14 @@ function CreateOrgExamContent() {
           <ArrowLeft className="h-4 w-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            Create Institutional Testing Series
+          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            <span>Create Institutional Testing Series</span>
+            <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-amber-400 border border-amber-500/20">
+              Curriculum Grounded
+            </span>
           </h1>
           <p className="text-xs text-slate-400">
-            Automates Punjab Boards & Federal Board exam papers with ready student sheets and model solution PDFs.
+            Automates Punjab Boards & Federal Board exam papers with ready student sheets, chapter filters, and model solution PDFs.
           </p>
         </div>
       </div>
@@ -311,6 +396,12 @@ function CreateOrgExamContent() {
               <span className="text-slate-400">Group & Subject:</span>
               <span className="font-semibold text-white">
                 {createdSeries.testSeries.groupName} ({createdSeries.testSeries.subjectCode})
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-400">Total Marks:</span>
+              <span className="font-semibold text-amber-400">
+                {createdSeries.testSeries.totalMarks} Marks
               </span>
             </div>
           </div>
@@ -433,17 +524,182 @@ function CreateOrgExamContent() {
               </select>
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Test Scope / Format *
+              </label>
+              <select
+                value={testType}
+                onChange={(e) => {
+                  const t = e.target.value;
+                  setTestType(t);
+                  if (t === "HALF_BOOK_1") selectFirstHalf();
+                  else if (t === "HALF_BOOK_2") selectSecondHalf();
+                  else if (t === "FULL_BOOK") selectAllChapters();
+                }}
+                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="CHAPTER_WISE">Chapter-wise Test (Custom Chapters)</option>
+                <option value="HALF_BOOK_1">1st Half Book Assessment</option>
+                <option value="HALF_BOOK_2">2nd Half Book Assessment</option>
+                <option value="FULL_BOOK">Full Book Board Mock Exam</option>
+              </select>
+            </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                Total Exam Marks
+                Total Marks & Time
               </label>
-              <input
-                type="number"
-                value={totalMarks}
-                onChange={(e) => setTotalMarks(e.target.value)}
-                className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3.5 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  value={totalMarks}
+                  onChange={(e) => setTotalMarks(e.target.value)}
+                  placeholder="Marks (e.g. 60)"
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+                />
+                <select
+                  value={timeAllowedMinutes}
+                  onChange={(e) => setTimeAllowedMinutes(e.target.value)}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 focus:border-amber-500 focus:outline-none"
+                >
+                  <option value="45">45 Minutes</option>
+                  <option value="60">1 Hour (60m)</option>
+                  <option value="90">1.5 Hours (90m)</option>
+                  <option value="120">2 Hours (120m)</option>
+                  <option value="180">3 Hours (180m)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Chapter Selection Section */}
+            <div className="sm:col-span-2 rounded-xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-semibold text-white">
+                    Syllabus Chapters ({selectedChapters.length}/{chapters.length} Selected)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-[11px]">
+                  <button
+                    type="button"
+                    onClick={selectAllChapters}
+                    className="rounded bg-slate-800 px-2 py-1 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    All Book
+                  </button>
+                  <button
+                    type="button"
+                    onClick={selectFirstHalf}
+                    className="rounded bg-slate-800 px-2 py-1 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    1st Half
+                  </button>
+                  <button
+                    type="button"
+                    onClick={selectSecondHalf}
+                    className="rounded bg-slate-800 px-2 py-1 text-slate-300 hover:text-white hover:bg-slate-700"
+                  >
+                    2nd Half
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearChapters}
+                    className="rounded bg-slate-800 px-2 py-1 text-slate-400 hover:text-rose-300 hover:bg-slate-700"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+
+              {loadingChapters ? (
+                <div className="py-4 text-center text-xs text-slate-400">
+                  Loading official curriculum chapters...
+                </div>
+              ) : chapters.length === 0 ? (
+                <div className="py-4 text-center text-xs text-slate-400">
+                  Full book general coverage applied for this subject.
+                </div>
+              ) : (
+                <div className="grid gap-2 sm:grid-cols-2 max-h-56 overflow-y-auto pr-1">
+                  {chapters.map((chap) => {
+                    const isSelected = selectedChapters.includes(chap.chapterNumber);
+                    return (
+                      <div
+                        key={chap.chapterNumber}
+                        onClick={() => toggleChapter(chap.chapterNumber)}
+                        className={`flex items-start gap-2.5 rounded-lg border p-2.5 cursor-pointer transition-all text-xs ${
+                          isSelected
+                            ? "border-amber-500/40 bg-amber-500/10 text-white"
+                            : "border-slate-800/80 bg-slate-900/40 text-slate-400 hover:border-slate-700"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={() => {}}
+                          className="mt-0.5 rounded border-slate-700 text-amber-500 focus:ring-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold truncate">
+                            Ch {chap.chapterNumber}: {chap.title}
+                          </p>
+                          {chap.urduTitle && (
+                            <p className="text-[11px] text-amber-400/80 font-arabic truncate">
+                              {chap.urduTitle}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* AI Grounding / Gemini Engine Toggle */}
+            <div className="sm:col-span-2 rounded-xl border border-indigo-500/20 bg-indigo-950/20 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Bot className="h-4 w-4 text-indigo-400" />
+                  <div>
+                    <h3 className="text-xs font-semibold text-white">
+                      Google Gemini Live AI Paper Grounding
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Uses Google Gemini to craft fresh, novel questions strictly grounded in the official chapters.
+                    </p>
+                  </div>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={useAi}
+                    onChange={(e) => setUseAi(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+              </div>
+
+              {useAi && (
+                <div className="pt-2 border-t border-indigo-500/10 space-y-2">
+                  <label className="block text-[11px] font-medium text-indigo-300">
+                    Custom Gemini API Key (Optional)
+                  </label>
+                  <input
+                    type="password"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    placeholder="Leave blank to use server environment key (GEMINI_API_KEY)"
+                    className="w-full rounded-lg border border-indigo-500/30 bg-slate-950 px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:border-indigo-400 focus:outline-none"
+                  />
+                  <p className="text-[10px] text-indigo-300/70">
+                    If Gemini API key is unavailable or quota is exceeded, engine smoothly falls back to the authoritative curriculum bank.
+                  </p>
+                </div>
+              )}
             </div>
 
             <div className="sm:col-span-2">
@@ -451,7 +707,7 @@ function CreateOrgExamContent() {
                 Test Instructions Header
               </label>
               <textarea
-                rows={3}
+                rows={2}
                 value={instructions}
                 onChange={(e) => setInstructions(e.target.value)}
                 className="w-full rounded-lg border border-slate-700 bg-slate-950 p-3 text-xs leading-relaxed text-slate-100 focus:border-amber-500 focus:outline-none"
@@ -462,10 +718,13 @@ function CreateOrgExamContent() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-600/25 hover:bg-amber-500 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 rounded-xl bg-amber-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-amber-600/25 hover:bg-amber-500 transition-all disabled:opacity-50"
           >
             {loading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Assembling Curriculum-Grounded Examination...</span>
+              </div>
             ) : (
               <>
                 <span>Generate Test Series & Complete Solution PDF</span>

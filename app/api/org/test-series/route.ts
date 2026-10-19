@@ -51,6 +51,12 @@ export async function POST(req: NextRequest) {
       totalMarks = 60,
       instructions,
       testDate,
+      chapterNumbers = [],
+      chapterTitles = [],
+      testType = "CHAPTER_WISE",
+      timeAllowedMinutes = 120,
+      useAi = false,
+      apiKey,
     } = body;
 
     if (!title) {
@@ -76,8 +82,8 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Generate class-specific & subject-grounded questions & solution keys based on Class, Group, Subject & Board
-    const generatedQuestions = CurriculumQuestionBank.generateStructuredPaper({
+    // Generate class-specific, chapter-targeted & subject-grounded questions & solution keys
+    const generatedQuestions = await CurriculumQuestionBank.generateStructuredPaperAsync({
       className,
       subjectCode,
       subjectName,
@@ -85,7 +91,13 @@ export async function POST(req: NextRequest) {
       totalMarks: Number(totalMarks),
       boardCode,
       title,
-      instructions,
+      instructions: instructions || `Time Allowed: ${timeAllowedMinutes} Minutes. Read all instructions carefully before writing.`,
+      chapterNumbers,
+      chapterTitles,
+      testType,
+      timeAllowedMinutes: Number(timeAllowedMinutes),
+      useAi: Boolean(useAi),
+      apiKey,
     });
 
 

@@ -146,4 +146,52 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
       }
     }
   });
+
+  it("8. Filters paper generation specifically by selected curriculum chapter numbers", () => {
+    // Generate Class 9 Physics paper strictly for Chapter 1 (Physical Quantities and Measurement)
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "Class 9",
+      subjectCode: "PHY-09",
+      subjectName: "Physics",
+      chapterNumbers: [1],
+      totalMarks: 30,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    // Check that questions retrieved belong to Chapter 1 Physical Quantities
+    const ch1Questions = [...secA.questions, ...secB.questions, ...secC.questions];
+    const ch1Matched = ch1Questions.filter((q) =>
+      q.chapterTitle?.toLowerCase().includes("physical quantities")
+    );
+    expect(ch1Matched.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("9. Ingests custom teacher/textbook questions and includes them in the generation bank", () => {
+    const initialCount = CurriculumQuestionBank.getQuestionCount("9", "PHY");
+
+    CurriculumQuestionBank.addQuestion({
+      id: "custom_ingested_test_1",
+      classLevel: "9",
+      subjectKey: "PHY",
+      chapterTitle: "Physical Quantities and Measurement",
+      topicTitle: "Screw Gauge Zero Error",
+      type: "MCQ",
+      marks: 1,
+      text: "If the zero of the circular scale lies above the index line of a screw gauge, the zero error is:",
+      options: [
+        { key: "A", text: "Positive" },
+        { key: "B", text: "Negative" },
+        { key: "C", text: "Zero" },
+        { key: "D", text: "Infinite" },
+      ],
+      correctOption: "B",
+      solutionExplanation: "When zero mark of circular scale remains above the index line, the zero error is negative.",
+    });
+
+    const newCount = CurriculumQuestionBank.getQuestionCount("9", "PHY");
+    expect(newCount).toBe(initialCount + 1);
+  });
 });
+

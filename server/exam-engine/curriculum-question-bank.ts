@@ -6,6 +6,25 @@
 // Guaranteed distinct, authentic questions across all classes and subjects
 // ==============================================================================
 
+import { PakistanCurriculumService } from "@/server/curriculum/pakistan-curriculum-registry";
+
+export interface GeneratePaperOptions {
+  className?: string;
+  subjectCode?: string;
+  subjectName?: string;
+  groupName?: string;
+  totalMarks?: number;
+  boardCode?: string;
+  title?: string;
+  instructions?: string;
+  chapterNumbers?: number[];
+  chapterTitles?: string[];
+  testType?: string; // "CHAPTER_WISE" | "HALF_BOOK_1" | "HALF_BOOK_2" | "FULL_BOOK" | "TERM_EXAM"
+  timeAllowedMinutes?: number;
+  useAi?: boolean;
+  apiKey?: string;
+}
+
 export interface StandardQuestion {
   id: string;
   classLevel: "9" | "10" | "11" | "12";
@@ -145,6 +164,22 @@ export const CURRICULUM_QUESTION_REGISTRY: StandardQuestion[] = [
     ],
   },
   {
+    id: "q_p9_short_0",
+    classLevel: "9",
+    subjectKey: "PHY",
+    chapterTitle: "Physical Quantities and Measurement",
+    topicTitle: "Base and Derived Quantities",
+    type: "SHORT",
+    marks: 3,
+    text: "Define base quantities and derived quantities. Name any four base quantities along with their standard SI units.",
+    modelAnswer: "Base Quantities: Physical quantities that serve as the foundation from which other quantities are derived (e.g. Length [meter - m], Mass [kilogram - kg], Time [second - s], Electric Current [ampere - A]).\nDerived Quantities: Physical quantities that are expressed in terms of base quantities by multiplication or division (e.g. Speed [m/s], Force [Newton - N], Work [Joule - J]).",
+    markingRubric: [
+      "1.0 Mark: Accurate definition of base quantities.",
+      "1.0 Mark: Accurate definition of derived quantities.",
+      "1.0 Mark: Four base quantities with correct SI units.",
+    ],
+  },
+  {
     id: "q_p9_short_2",
     classLevel: "9",
     subjectKey: "PHY",
@@ -173,6 +208,23 @@ export const CURRICULUM_QUESTION_REGISTRY: StandardQuestion[] = [
     markingRubric: [
       "1.5 Marks: Formal statement of Pascal's Law.",
       "1.5 Marks: Working formula and explanation of hydraulic lift multiplication.",
+    ],
+  },
+  {
+    id: "q_p9_long_0",
+    classLevel: "9",
+    subjectKey: "PHY",
+    chapterTitle: "Physical Quantities and Measurement",
+    topicTitle: "Screw Gauge Working and Measurement",
+    type: "LONG",
+    marks: 9,
+    text: "Explain the construction, pitch, and least count of a micrometer screw gauge. How is the diameter of a thin wire measured using it?",
+    modelAnswer: "1. Construction: Consists of a U-shaped metallic frame, fixed stud, movable spindle, main scale (thimble/sleeve) graduated in mm, and circular scale on thimble (usually 100 or 50 divisions) with ratchet mechanism.\n2. Pitch & Least Count: Pitch = Distance moved per rotation (typically 1 mm or 0.5 mm). Least Count = Pitch / Number of circular divisions = 1 mm / 100 = 0.01 mm (0.001 cm).\n3. Zero Error Evaluation: Close spindle gently with ratchet. Record zero error and correction factor.\n4. Measurement Procedure: Place wire between stud and spindle. Turn ratchet until clicks. Record main scale reading (MSR) and circular scale reading coinciding with index line (CSR). Observed diameter = MSR + (CSR × Least Count). Corrected diameter = Observed diameter ± Zero Correction.",
+    markingRubric: [
+      "2.0 Marks: Description and labeled diagram/components of screw gauge.",
+      "2.0 Marks: Pitch and least count mathematical formulation.",
+      "2.0 Marks: Zero error identification (positive/negative).",
+      "3.0 Marks: Complete 4-step procedure for wire diameter determination.",
     ],
   },
   {
@@ -1192,6 +1244,27 @@ export const CURRICULUM_QUESTION_REGISTRY: StandardQuestion[] = [
 // Service Class for Generating Grade-Specific Examination Papers
 // ------------------------------------------------------------------------------
 export class CurriculumQuestionBank {
+  private static customQuestions: StandardQuestion[] = [];
+
+  /**
+   * Registers a newly ingested or trained question into the active runtime pool.
+   */
+  public static addQuestion(q: StandardQuestion): void {
+    this.customQuestions.push(q);
+  }
+
+  /**
+   * Returns total count of questions in the bank for a class and subject.
+   */
+  public static getQuestionCount(classLevel?: string, subjectKey?: string): number {
+    const all = [...CURRICULUM_QUESTION_REGISTRY, ...this.customQuestions];
+    return all.filter((q) => {
+      if (classLevel && q.classLevel !== classLevel) return false;
+      if (subjectKey && q.subjectKey !== subjectKey) return false;
+      return true;
+    }).length;
+  }
+
   /**
    * Normalizes incoming class string (e.g. "Class 9", "9th", "SSC-I", "Grade 9", "1st Year", "11", etc.)
    */
@@ -1210,10 +1283,11 @@ export class CurriculumQuestionBank {
    */
   public static normalizeSubjectKey(rawSubject?: string, rawCode?: string): string {
     const combined = `${rawSubject || ""} ${rawCode || ""}`.toUpperCase();
+    if (combined.includes("PHY")) return "PHY";
     if (combined.includes("BIO")) return "BIO";
-    if (combined.includes("CS") || combined.includes("COMP")) return "CS";
-    if (combined.includes("MTH") || combined.includes("MATH")) return "MTH";
     if (combined.includes("CHM") || combined.includes("CHEM")) return "CHM";
+    if (combined.includes("MTH") || combined.includes("MATH")) return "MTH";
+    if (combined.includes("CS") || combined.includes("COMP")) return "CS";
     if (combined.includes("ENG")) return "ENG";
     if (combined.includes("URD")) return "URD";
     if (combined.includes("ISL")) return "ISL";
@@ -1223,23 +1297,14 @@ export class CurriculumQuestionBank {
 
   /**
    * Generates a fully authentic, structured 3-section examination paper tailored to the class and subject.
+   * If chapterNumbers or chapterTitles are specified, questions are strictly filtered and prioritized
+   * from the designated syllabus chapters.
    */
   public static generateStructuredPaper(
-    paramsOrClass:
-      | {
-          className?: string;
-          subjectCode?: string;
-          subjectName?: string;
-          groupName?: string;
-          totalMarks?: number;
-          boardCode?: string;
-          title?: string;
-          instructions?: string;
-        }
-      | string,
+    paramsOrClass: GeneratePaperOptions | string,
     maybeSubjectCode?: string
   ): GeneratedPaperSection[] {
-    const params =
+    const params: GeneratePaperOptions =
       typeof paramsOrClass === "string"
         ? { className: paramsOrClass, subjectCode: maybeSubjectCode }
         : paramsOrClass || {};
@@ -1247,32 +1312,93 @@ export class CurriculumQuestionBank {
     const classLevel = this.normalizeClassLevel(params.className);
     const subjectKey = this.normalizeSubjectKey(params.subjectName, params.subjectCode);
 
+    // Combine static registry with any dynamically ingested questions
+    const allAvailable = [...CURRICULUM_QUESTION_REGISTRY, ...this.customQuestions];
+
     // Filter registry for exact classLevel & subjectKey
-    let pool = CURRICULUM_QUESTION_REGISTRY.filter(
+    let pool = allAvailable.filter(
       (q) => q.classLevel === classLevel && q.subjectKey === subjectKey
     );
 
-    // If subject has partial coverage in this class level, fallback to same subject across classes or same class across subjects
-    if (pool.length === 0) {
-      pool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === subjectKey);
+    // If chapterNumbers or chapterTitles are specified, filter strictly by selected chapters
+    const chapters = PakistanCurriculumService.getChapters(classLevel, subjectKey);
+    let targetChapterTitles: string[] = [];
+
+    if (params.chapterNumbers && params.chapterNumbers.length > 0) {
+      for (const num of params.chapterNumbers) {
+        const found = chapters.find((c) => c.chapterNumber === num);
+        if (found) {
+          targetChapterTitles.push(found.title);
+        }
+      }
     }
-    if (pool.length === 0) {
-      pool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.classLevel === classLevel);
-    }
-    if (pool.length === 0) {
-      pool = CURRICULUM_QUESTION_REGISTRY;
+    if (params.chapterTitles && params.chapterTitles.length > 0) {
+      targetChapterTitles.push(...params.chapterTitles);
     }
 
-    const mcqs = pool.filter((q) => q.type === "MCQ");
-    const shorts = pool.filter((q) => q.type === "SHORT");
-    const longs = pool.filter((q) => q.type === "LONG");
+    // Fallbacks if pool is empty
+    if (pool.length === 0) {
+      pool = allAvailable.filter((q) => q.subjectKey === subjectKey);
+    }
+    if (pool.length === 0) {
+      pool = allAvailable.filter((q) => q.classLevel === classLevel);
+    }
+    if (pool.length === 0) {
+      pool = allAvailable;
+    }
 
     // Shuffle helper for non-repeating dynamic experience
     const shuffle = <T>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
-    const selectedMcqs = shuffle(mcqs).slice(0, 12);
-    const selectedShorts = shuffle(shorts).slice(0, 6);
-    const selectedLongs = shuffle(longs).slice(0, 3);
+    // Adapt question quotas based on totalMarks or default standard board specs
+    const totalMarks = params.totalMarks || 60;
+    let mcqTarget = 12;
+    let shortTarget = 6;
+    let longTarget = 3;
+
+    if (totalMarks <= 30) {
+      mcqTarget = 6;
+      shortTarget = 4;
+      longTarget = 1;
+    } else if (totalMarks <= 50) {
+      mcqTarget = 10;
+      shortTarget = 5;
+      longTarget = 2;
+    }
+
+    let selectedMcqs: StandardQuestion[] = [];
+    let selectedShorts: StandardQuestion[] = [];
+    let selectedLongs: StandardQuestion[] = [];
+
+    if (targetChapterTitles.length > 0) {
+      const isMatch = (q: StandardQuestion) => {
+        const qTitle = (q.chapterTitle || "").toLowerCase();
+        return targetChapterTitles.some((t) => {
+          const target = (t || "").toLowerCase();
+          return Boolean(target && (qTitle.includes(target) || target.includes(qTitle)));
+        });
+      };
+
+      const matchedMcqs = shuffle(pool.filter((q) => q.type === "MCQ" && isMatch(q)));
+      const otherMcqs = shuffle(pool.filter((q) => q.type === "MCQ" && !isMatch(q)));
+      selectedMcqs = [...matchedMcqs, ...otherMcqs].slice(0, Math.min(mcqTarget, matchedMcqs.length + otherMcqs.length));
+
+      const matchedShorts = shuffle(pool.filter((q) => q.type === "SHORT" && isMatch(q)));
+      const otherShorts = shuffle(pool.filter((q) => q.type === "SHORT" && !isMatch(q)));
+      selectedShorts = [...matchedShorts, ...otherShorts].slice(0, Math.min(shortTarget, matchedShorts.length + otherShorts.length));
+
+      const matchedLongs = shuffle(pool.filter((q) => q.type === "LONG" && isMatch(q)));
+      const otherLongs = shuffle(pool.filter((q) => q.type === "LONG" && !isMatch(q)));
+      selectedLongs = [...matchedLongs, ...otherLongs].slice(0, Math.min(longTarget, matchedLongs.length + otherLongs.length));
+    } else {
+      const mcqs = shuffle(pool.filter((q) => q.type === "MCQ"));
+      const shorts = shuffle(pool.filter((q) => q.type === "SHORT"));
+      const longs = shuffle(pool.filter((q) => q.type === "LONG"));
+
+      selectedMcqs = mcqs.slice(0, Math.min(mcqTarget, mcqs.length));
+      selectedShorts = shorts.slice(0, Math.min(shortTarget, shorts.length));
+      selectedLongs = longs.slice(0, Math.min(longTarget, longs.length));
+    }
 
     let globalSeq = 1;
 
@@ -1280,7 +1406,7 @@ export class CurriculumQuestionBank {
     const sectionA: GeneratedPaperSection = {
       sectionName: "Section A: Multiple Choice Questions (Objective)",
       sectionType: "MCQ",
-      totalMarks: selectedMcqs.reduce((sum, q) => sum + q.marks, 0) || 12,
+      totalMarks: selectedMcqs.reduce((sum, q) => sum + q.marks, 0) || selectedMcqs.length || 12,
       instructions: "Choose the correct option for each question. Cutting, erasing or overwriting earns zero marks.",
       questions: selectedMcqs.map((q) => ({
         id: `q_mcq_${globalSeq}`,
@@ -1300,7 +1426,7 @@ export class CurriculumQuestionBank {
     const sectionB: GeneratedPaperSection = {
       sectionName: "Section B: Short Conceptual Questions (Subjective)",
       sectionType: "SHORT",
-      totalMarks: selectedShorts.reduce((sum, q) => sum + q.marks, 0) || 18,
+      totalMarks: selectedShorts.reduce((sum, q) => sum + q.marks, 0) || selectedShorts.length * 3 || 18,
       instructions: "Write concise answers (3-5 lines). Answer all compulsory parts clearly.",
       questions: selectedShorts.map((q) => ({
         id: `q_short_${globalSeq}`,
@@ -1308,7 +1434,7 @@ export class CurriculumQuestionBank {
         text: q.text,
         marks: q.marks,
         modelAnswer: q.modelAnswer,
-        markingRubric: q.markingRubric || ["Full credit for accurate definition and working formula."],
+        markingRubric: q.markingRubric || ["Full credit for accurate definition, reasoning and working formula."],
         chapterTitle: q.chapterTitle,
         topicTitle: q.topicTitle,
       })),
@@ -1318,7 +1444,7 @@ export class CurriculumQuestionBank {
     const sectionC: GeneratedPaperSection = {
       sectionName: "Section C: Long Theory & Detailed Derivations",
       sectionType: "LONG",
-      totalMarks: selectedLongs.reduce((sum, q) => sum + q.marks, 0) || 18,
+      totalMarks: selectedLongs.reduce((sum, q) => sum + q.marks, 0) || selectedLongs.length * 6 || 18,
       instructions: "Attempt comprehensive questions with derivations, circuit diagrams, and mathematical working steps.",
       questions: selectedLongs.map((q) => ({
         id: `q_long_${globalSeq}`,
@@ -1333,5 +1459,45 @@ export class CurriculumQuestionBank {
     };
 
     return [sectionA, sectionB, sectionC];
+  }
+
+  /**
+   * Async generator that utilizes Google Gemini AI when useAi is true and an API key is available.
+   * Seamlessly falls back to the authoritative curriculum bank if AI is offline or without keys.
+   */
+  public static async generateStructuredPaperAsync(
+    options: GeneratePaperOptions
+  ): Promise<GeneratedPaperSection[]> {
+    if (options.useAi) {
+      try {
+        const { GeminiLiveGenerator } = await import("@/server/ai/gemini-live-generator");
+        const aiResult = await GeminiLiveGenerator.generatePaperWithGemini({
+          boardCode: options.boardCode,
+          className: options.className || "Class 9",
+          groupName: options.groupName,
+          subjectCode: options.subjectCode || "PHY-09",
+          subjectName: options.subjectName || "Physics",
+          chapterNumbers: options.chapterNumbers,
+          chapterTitles: options.chapterTitles,
+          totalMarks: options.totalMarks,
+          timeAllowedMinutes: options.timeAllowedMinutes,
+          testType: options.testType,
+          customTitle: options.title,
+          apiKey: options.apiKey,
+        });
+
+        if (
+          aiResult.sections &&
+          aiResult.sections.length === 3 &&
+          aiResult.sections[0].questions.length > 0
+        ) {
+          return aiResult.sections;
+        }
+      } catch (err: any) {
+        console.warn("[CurriculumQuestionBank] Gemini AI generation fallback to authoritative registry:", err.message);
+      }
+    }
+
+    return this.generateStructuredPaper(options);
   }
 }
