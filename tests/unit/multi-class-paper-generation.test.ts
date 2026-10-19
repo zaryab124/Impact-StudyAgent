@@ -193,5 +193,54 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     const newCount = CurriculumQuestionBank.getQuestionCount("9", "PHY");
     expect(newCount).toBe(initialCount + 1);
   });
+
+  it("10. Generates authentic Mathematics 1st Year (Pre-Engineering & ICS) Practice Paper matching board syllabus", () => {
+    const rawTitle = "Mathematics (1st Year - Pre-Engineering & ICS) Practice Paper - Mathematics (1st Year - Pre-Engineering & ICS) (Punjab Curriculum & Textbook Board)";
+    
+    // Normalization verifies 1st Year Mathematics correctly
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(undefined, rawTitle);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(undefined, rawTitle);
+    expect(normClass).toBe("11");
+    expect(normSub).toBe("MTH");
+
+    // Generate paper using 1st Year Math
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "1st Year",
+      subjectName: "Mathematics",
+      totalMarks: 60,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    const allStems = [
+      ...secA.questions.map((q) => q.text),
+      ...secB.questions.map((q) => q.text),
+      ...secC.questions.map((q) => q.text),
+    ].join(" ");
+
+    // Verify authentic 1st Year Math syllabus concepts (Complex Numbers, Cramer, Cube roots of unity, Induction, Trigonometry)
+    expect(allStems).toMatch(/complex|determinant|cube root|arithmetic|induction|trigonometric|escribed/i);
+
+    // Verify absolutely NO placeholder or physics distractors exist
+    const allOptions = secA.questions.flatMap((q) => q.options?.map((o) => o.text) || []).join(" ");
+    expect(allOptions).not.toMatch(/inaccurate formulation|alternative distractor|scientific principle|inverse proportional factor/i);
+
+    // Verify each MCQ has valid mathematical options
+    for (const mcq of secA.questions) {
+      expect(mcq.options?.length).toBe(4);
+      expect(mcq.correctOption).toBeDefined();
+      expect(mcq.solutionExplanation).toBeDefined();
+    }
+  });
+
+  it("11. Generates authentic Class 10 (SSC-II) Mathematics paper distinct from 9th and 11th", () => {
+    const sections = CurriculumQuestionBank.generateStructuredPaper("10th", "MTH");
+    expect(sections.length).toBe(3);
+
+    const allStems = sections.flatMap((s) => s.questions.map((q) => q.text)).join(" ");
+    // Verify Class 10 Math concepts (Quadratic equation, Discriminant, Alternando, Radian, Factorization)
+    expect(allStems).toMatch(/quadratic|discriminant|alternando|factorization|cube roots/i);
+  });
 });
 

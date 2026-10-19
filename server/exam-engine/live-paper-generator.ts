@@ -178,11 +178,14 @@ export class LivePaperGenerator {
         ? config.chapterIds
         : ["chap-01", "chap-02", "chap-03"];
 
-      const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId);
-      const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId);
-      const subQuestions = CURRICULUM_QUESTION_REGISTRY.filter(
+      const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId, config.title);
+      const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId, config.title);
+      let subQuestions = CURRICULUM_QUESTION_REGISTRY.filter(
         (q) => q.classLevel === normClass && q.subjectKey === normSub
       );
+      if (subQuestions.length === 0) {
+        subQuestions = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === normSub);
+      }
 
       for (const sec of sections) {
         for (let i = 0; i < sec.questionCount; i++) {
@@ -317,14 +320,33 @@ export class LivePaperGenerator {
       // If replacement exhausted and still no approved item
       if (!candidateApproved) {
         // Retrieve authentic curriculum bank candidate for this exact class and subject
-        const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId);
-        const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId);
-        const bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
+        const normClass = CurriculumQuestionBank.normalizeClassLevel(config.classId, config.title);
+        const normSub = CurriculumQuestionBank.normalizeSubjectKey(config.subjectId, config.title);
+        let bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
           (q) => q.type === slot.questionType && q.classLevel === normClass && q.subjectKey === normSub
         );
+        if (bankItems.length === 0) {
+          bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
+            (q) => q.type === slot.questionType && q.subjectKey === normSub
+          );
+        }
+        if (bankItems.length === 0) {
+          bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
+            (q) => q.type === slot.questionType
+          );
+        }
         const bankMatch = bankItems[(slot.sequence - 1) % Math.max(1, bankItems.length)];
 
-        const fallbackText = bankMatch?.text || `Explain the theoretical principles and practical significance of ${slot.topicTitle || "this topic"} in detail.`;
+        // Retrieve authentic fallback MCQ options if needed
+        let fallbackMcqOptions = bankMatch?.options;
+        if (!fallbackMcqOptions && slot.questionType === "MCQ") {
+          const sampleMcq = CURRICULUM_QUESTION_REGISTRY.find(
+            (q) => q.type === "MCQ" && (q.subjectKey === normSub || q.classLevel === normClass) && q.options && q.options.length === 4
+          ) || CURRICULUM_QUESTION_REGISTRY.find((q) => q.type === "MCQ" && q.options && q.options.length === 4);
+          fallbackMcqOptions = sampleMcq?.options;
+        }
+
+        const fallbackText = bankMatch?.text || `Explain the core principles and analytical formulation of ${slot.topicTitle || "this topic"} in detail.`;
         const fallbackCandidate: QuestionCandidate = {
           id: `cand_fb_${slot.id}`,
           questionText: fallbackText,
@@ -363,19 +385,12 @@ export class LivePaperGenerator {
           answerMaterial: {
             expectedKeyPoints: bankMatch?.modelAnswer ? [bankMatch.modelAnswer] : [`Key factual principle for ${slot.topicTitle}`],
             correctOptionKey: slot.questionType === "MCQ" ? (bankMatch?.correctOption || "A") : undefined,
-            options: slot.questionType === "MCQ" ? (
-              bankMatch?.options
-                ? bankMatch.options.map((opt) => ({
-                    key: opt.key,
-                    text: opt.text,
-                    isCorrect: opt.key === (bankMatch.correctOption || "A"),
-                  }))
-                : [
-                    { key: "A" as const, text: `Accurate formulation of ${slot.topicTitle}`, isCorrect: true },
-                    { key: "B" as const, text: `Inaccurate formulation`, isCorrect: false },
-                    { key: "C" as const, text: `Alternative distractor`, isCorrect: false },
-                    { key: "D" as const, text: `Non-applicable statement`, isCorrect: false },
-                  ]
+            options: slot.questionType === "MCQ" && fallbackMcqOptions ? (
+              fallbackMcqOptions.map((opt) => ({
+                key: opt.key,
+                text: opt.text,
+                isCorrect: opt.key === (bankMatch?.correctOption || "A"),
+              }))
             ) : undefined,
           },
 

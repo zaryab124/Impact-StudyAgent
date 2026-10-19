@@ -732,12 +732,16 @@ Identified Concepts: ${queryUnderstanding.extractedConcepts.join(", ")}
     const pageNum = topChunk.pageNumber;
 
     if (questionType === "MCQ") {
+      const alt1 = evidence[1]?.content?.slice(0, 100) || "Alternative theoretical hypothesis not supported by experimental verification.";
+      const alt2 = evidence[2]?.content?.slice(0, 100) || "Inverse formulation applicable only under non-standard boundary conditions.";
+      const alt3 = evidence[3]?.content?.slice(0, 100) || "Secondary consequence resulting from non-ideal parameter approximations.";
+
       return {
         options: [
           { key: "A", text: `${topChunk.content.slice(0, 100)}`, isCorrect: true },
-          { key: "B", text: "Incorrect statement regarding principles presented in textbook.", isCorrect: false },
-          { key: "C", text: "False statement regarding principles presented in textbook.", isCorrect: false },
-          { key: "D", text: "Secondary application not applied to textbook principles.", isCorrect: false },
+          { key: "B", text: alt1, isCorrect: false },
+          { key: "C", text: alt2, isCorrect: false },
+          { key: "D", text: alt3, isCorrect: false },
         ],
         expectedKeyPoints: [`${topChunk.content.slice(0, 60)} page ${pageNum}`],
         rubricBreakdown: [

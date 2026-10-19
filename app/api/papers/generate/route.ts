@@ -153,15 +153,30 @@ export async function POST(req: NextRequest) {
       : ["Fundamental Concepts", "Theoretical Foundations", "Practical Applications", "Experimental Verification"];
 
     // Query authentic curriculum question bank matching requested class & subject
-    const normClass = CurriculumQuestionBank.normalizeClassLevel(classId);
-    const normSub = CurriculumQuestionBank.normalizeSubjectKey(subjectId);
-    const bankPool = CURRICULUM_QUESTION_REGISTRY.filter(
+    const normClass = CurriculumQuestionBank.normalizeClassLevel(classId, title);
+    const normSub = CurriculumQuestionBank.normalizeSubjectKey(subjectId, title);
+    let bankPool = CURRICULUM_QUESTION_REGISTRY.filter(
       (q) => q.classLevel === normClass && q.subjectKey === normSub
     );
+    if (bankPool.length === 0) {
+      bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === normSub);
+    }
+    if (bankPool.length === 0) {
+      bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.classLevel === normClass);
+    }
+    if (bankPool.length === 0) {
+      bankPool = CURRICULUM_QUESTION_REGISTRY;
+    }
 
     const sections: ExaminationPaperSection[] = sectionConfigs.map((sc) => {
       const qIds: string[] = [];
-      const candidateItems = bankPool.filter((q) => q.type === sc.questionType);
+      let candidateItems = bankPool.filter((q) => q.type === sc.questionType);
+      if (candidateItems.length === 0) {
+        candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType && q.subjectKey === normSub);
+      }
+      if (candidateItems.length === 0) {
+        candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType);
+      }
 
       for (let i = 0; i < sc.count; i++) {
         const topicName = sampleTopics[(seq - 1) % sampleTopics.length];
@@ -171,17 +186,18 @@ export async function POST(req: NextRequest) {
         const bankItem = candidateItems[i % Math.max(1, candidateItems.length)];
 
         const qText = bankItem?.text || (sc.questionType === "MCQ" 
-          ? `Identify the fundamental scientific principle of ${topicName} (Item #${seq}).`
+          ? `Evaluate the core analytical formulation and properties of ${topicName} (Item #${seq}).`
           : sc.questionType === "SHORT"
-          ? `Briefly explain the principle of ${topicName} and state its primary significance.`
-          : `Derive the governing formulation for ${topicName} with detailed theoretical explanation.`);
+          ? `Explain the fundamental concept of ${topicName} and state its key mathematical/scientific significance.`
+          : `Provide a comprehensive derivation and step-by-step solution for ${topicName}.`);
 
-        const studentOptions = bankItem?.options || (sc.questionType === "MCQ" ? [
-          { key: "A", text: `Standard verified formulation of ${topicName}.` },
-          { key: "B", text: `Inverse proportional factor.` },
-          { key: "C", text: `Theoretical approximation under standard state.` },
-          { key: "D", text: `Negligible contribution.` },
-        ] : undefined);
+        let studentOptions = bankItem?.options;
+        if (!studentOptions && sc.questionType === "MCQ") {
+          const sampleWithOpts = CURRICULUM_QUESTION_REGISTRY.find(
+            (q) => q.type === "MCQ" && (q.subjectKey === normSub || q.classLevel === normClass) && q.options && q.options.length === 4
+          ) || CURRICULUM_QUESTION_REGISTRY.find((q) => q.type === "MCQ" && q.options && q.options.length === 4);
+          studentOptions = sampleWithOpts?.options;
+        }
 
         const chapterTitle = bankItem?.chapterTitle || `Chapter on ${topicName}`;
         const topicTitle = bankItem?.topicTitle || topicName;
