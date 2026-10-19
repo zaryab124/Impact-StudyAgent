@@ -474,5 +474,98 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     expect(new Set(p1McqIds).size).toBe(p1McqIds.length);
     expect(new Set(p2McqIds).size).toBe(p2McqIds.length);
   });
+
+  it("19. Registers authentic Class 10 Urdu textbook (PCTB-URD-10) in official Punjab textbook catalog and registry", async () => {
+    const { PctbService } = await import("@/server/punjab/pctb-service");
+    const catalog = PctbService.getCatalog();
+    const urdu10Book = catalog.find((b) => b.code === "PCTB-URD-10" || b.id === "pctb-urd-10");
+
+    expect(urdu10Book).toBeDefined();
+    expect(urdu10Book?.classLevel).toBe(10);
+    expect(urdu10Book?.subjectCode).toBe("URD-10");
+    expect(urdu10Book?.title).toContain("اردو لازمی برائے جماعت دہم");
+    expect(urdu10Book?.officialSourceUrl).toBe("https://pctb.punjab.gov.pk/system/files/Urdu-10.pdf");
+    expect(urdu10Book?.chapters.length).toBeGreaterThanOrEqual(20);
+
+    // Verify key chapters exist
+    const titles = urdu10Book!.chapters.map((c) => c.title);
+    expect(titles.some((t) => t.includes("مرزا محمد سعید"))).toBe(true);
+    expect(titles.some((t) => t.includes("نظریہ پاکستان"))).toBe(true);
+    expect(titles.some((t) => t.includes("پرستان کی شہزادی"))).toBe(true);
+    expect(titles.some((t) => t.includes("مجھے میرے دوستوں سے بچاؤ"))).toBe(true);
+    expect(titles.some((t) => t.includes("ملمع"))).toBe(true);
+    expect(titles.some((t) => t.includes("علی بخش"))).toBe(true);
+    expect(titles.some((t) => t.includes("نام دیو مالی"))).toBe(true);
+    expect(titles.some((t) => t.includes("حمد"))).toBe(true);
+    expect(titles.some((t) => t.includes("نعت"))).toBe(true);
+    expect(titles.some((t) => t.includes("میدانِ کربلا"))).toBe(true);
+    expect(titles.some((t) => t.includes("فاطمہ بنتِ عبداللہ"))).toBe(true);
+    expect(titles.some((t) => t.includes("کسان"))).toBe(true);
+    expect(titles.some((t) => t.includes("آتش"))).toBe(true);
+    expect(titles.some((t) => t.includes("قواعد و انشا"))).toBe(true);
+  });
+
+  it("20. Generates authentic Class 10 (SSC-II) Urdu paper with 0% CS pollution and 0% duplication", () => {
+    // 1. Verify large question bank capacity for Class 10 Urdu
+    const urd10Pool = CURRICULUM_QUESTION_REGISTRY.filter(
+      (q) => q.classLevel === "10" && q.subjectKey === "URD"
+    );
+    const mcqs = urd10Pool.filter((q) => q.type === "MCQ");
+    const shorts = urd10Pool.filter((q) => q.type === "SHORT");
+    const longs = urd10Pool.filter((q) => q.type === "LONG");
+
+    expect(mcqs.length).toBeGreaterThanOrEqual(45);
+    expect(shorts.length).toBeGreaterThanOrEqual(25);
+    expect(longs.length).toBeGreaterThanOrEqual(12);
+
+    // 2. Generate paper using Class 10 Urdu
+    const sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "Class 10",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+
+    expect(sections.length).toBe(3);
+    const [secA, secB, secC] = sections;
+
+    expect(secA.questions.length).toBe(12);
+    expect(secB.questions.length).toBe(6);
+    expect(secC.questions.length).toBe(3);
+
+    const allQuestions = [...secA.questions, ...secB.questions, ...secC.questions];
+    const allStems = allQuestions.map((q) => q.text);
+
+    // Verify authentic Class 10 Urdu syllabus content
+    const combinedText = allStems.join(" ");
+    expect(combinedText).toMatch(/مرزا محمد سعید|نظریہ پاکستان|پرستان کی شہزادی|علی بخش|نام دیو مالی|استعارہ|کنایہ|مجازِ مرسل|فاطمہ بنتِ عبداللہ|میر انیس|جوش ملیح آبادی|خواجہ حیدر علی آتش|مصحفی/);
+
+    // Verify strictly ZERO Computer Science / Database stems exist
+    expect(combinedText).not.toMatch(/flowchart|binary|topology|html|printf|database|normalization|c language|tcp\/ip/i);
+
+    // Verify 100% unique question stems (zero repeats)
+    const uniqueStems = new Set(allStems);
+    expect(uniqueStems.size).toBe(allQuestions.length);
+  });
+
+  it("21. Guarantees 0% question collision between Class 9 Urdu and Class 10 Urdu papers", () => {
+    const p9 = CurriculumQuestionBank.generateStructuredPaper({
+      className: "9th",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+    const p10 = CurriculumQuestionBank.generateStructuredPaper({
+      className: "10th",
+      subjectName: "Urdu",
+      totalMarks: 60,
+    });
+
+    const stems9 = new Set(p9.flatMap((s) => s.questions.map((q) => q.text)));
+    const stems10 = new Set(p10.flatMap((s) => s.questions.map((q) => q.text)));
+
+    // Zero overlap between Grade 9 and Grade 10 Urdu
+    const collision = [...stems9].filter((s) => stems10.has(s));
+    expect(collision.length).toBe(0);
+  });
 });
+
 

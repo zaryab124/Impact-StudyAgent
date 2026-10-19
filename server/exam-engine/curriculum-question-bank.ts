@@ -8,6 +8,7 @@
 
 import { PakistanCurriculumService } from "@/server/curriculum/pakistan-curriculum-registry";
 import { CLASS_9_URDU_QUESTIONS } from "./class9-urdu-bank";
+import { CLASS_10_URDU_QUESTIONS } from "./class10-urdu-bank";
 
 export interface GeneratePaperOptions {
   className?: string;
@@ -3829,6 +3830,7 @@ export const CURRICULUM_QUESTION_REGISTRY: StandardQuestion[] = [
     ],
   },
   ...CLASS_9_URDU_QUESTIONS,
+  ...CLASS_10_URDU_QUESTIONS,
 ];
 
 // ------------------------------------------------------------------------------
