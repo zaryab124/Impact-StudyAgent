@@ -586,6 +586,7 @@ export const PAKISTAN_CURRICULUM_REGISTRY: SubjectCurriculum[] = [
     timeAllowedMinutes: 180,
     chapters: [
       { chapterNumber: 1, title: "Basic Concepts (Stoichiometry)", keyTopics: ["Mole and Molar Volume", "Limiting Reactant", "Theoretical and Actual Yield", "Combustion Analysis", "Stoichiometric Calculations"] },
+      { chapterNumber: 2, title: "Experimental Techniques in Chemistry", keyTopics: ["Filtration Techniques", "Crystallization and Solvent Selection", "Sublimation", "Solvent Extraction and Distribution Law", "Paper and Column Chromatography"] },
       { chapterNumber: 3, title: "Gases", keyTopics: ["Gas Laws: Boyle, Charles, Avogadro", "Ideal Gas Equation (PV = nRT)", "Dalton's Law of Partial Pressures", "Graham's Law of Diffusion", "Kinetic Molecular Theory & Real Gas Non-ideality (Van der Waals Equation)"] },
       { chapterNumber: 4, title: "Liquids and Solids", keyTopics: ["Intermolecular Forces (Dipole-Dipole, London Forces, Hydrogen Bonding)", "Evaporation and Vapour Pressure", "Crystal Lattice and Unit Cell", "Types of Solids (Ionic, Covalent, Molecular, Metallic)"] },
       { chapterNumber: 5, title: "Atomic Structure", keyTopics: ["Discovery of Electron, Proton and Neutron", "Planck's Quantum Theory", "Bohr's Model & Hydrogen Spectrum", "De Broglie's Hypothesis & Heisenberg Uncertainty Principle", "Quantum Numbers & Electronic Configuration"] },

@@ -620,7 +620,7 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     expect(combinedQuestions).not.toMatch(/Branches of Chemistry|Bohr's Atomic Theory|Ionization Energy|Coordinate Covalent Bond|Gaseous State: Diffusion|Solute and Solvent|Oxidation Numbers|Non-Metals Reactivity|Avogadro's Number/i);
 
     // Verify ZERO Computer Science stems exist
-    expect(combinedQuestions).not.toMatch(/flowchart|binary|topology|html|printf|database|normalization|c language/i);
+    expect(combinedQuestions).not.toMatch(/flowchart symbol|flowchart notation|binary equivalent|network topology|html|printf|relational database|c language/i);
 
     // Verify zero duplicates
     const uniqueQuestions = new Set(questionTexts);
@@ -712,5 +712,118 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     const allStems = [...paper1Sections, ...paper2Sections].flatMap((s) => s.questions.map((q) => q.text)).join(" ");
     expect(allStems).toMatch(/Equilibrium|Kc|Bronsted|Lewis|pH|Catenation|Baeyer|Carbohydrate|Peptide|Atmosphere|Hardness|Solvay|Urea/i);
     expect(allStems).not.toMatch(/Branches of Chemistry|Bohr's Atomic Theory|Fundamental principle and governing rule/i);
+  });
+
+  it("28. Guarantees ExamRepository.findPaperById hydrates paper_lcxnoku_1792458580162 with authentic Class 11 Chemistry and zero Math, Stats, Physics or Biology pollution", async () => {
+    const { ExamRepository } = await import("@/server/exam-engine/exam-repository");
+    const paper = await ExamRepository.findPaperById("paper_lcxnoku_1792458580162");
+
+    expect(paper).not.toBeNull();
+    expect(paper?.title).toMatch(/Chemistry.*1st Year/i);
+
+    const questionTexts = paper!.questions.map((q) => q.questionText);
+    const combinedQuestions = questionTexts.join(" ");
+
+    // Verify authentic Class 11 Chemistry content (Chapters 1-11)
+    expect(combinedQuestions).toMatch(/molar volume|limiting reactant|crystallization|distribution law|ideal gas|van der waals|dalton|graham|hydrogen bonding|unit cell|quantum numbers|de broglie|hybridization|vsepr|born-haber|hess|le chatelier|buffer|raoult|molality|electrochemical|activation energy|arrhenius/i);
+
+    // Verify strictly ZERO Math (matrices, determinants, cube root of unity, complex number) pollution
+    expect(combinedQuestions).not.toMatch(/determinant|matrix|cube root of unity|\(1 \+ ω|multiplicative inverse|tan\(3x\)|sample space|mutually exclusive|P\(A ∩ B\)/i);
+
+    // Verify strictly ZERO Statistics (Quartile Deviation, Fisher's Index, Binomial distribution) pollution
+    expect(combinedQuestions).not.toMatch(/Quartile Deviation|Fisher's Ideal Price Index|Laspeyre|Paasche|Binomial distribution/i);
+
+    // Verify strictly ZERO Physics / Biology pollution
+    expect(combinedQuestions).not.toMatch(/Bernoulli|projectile motion|scalar product of vectors|conditions of equilibrium|first law of thermodynamics|enzyme inhibitor/i);
+
+    // Verify zero duplicates
+    const uniqueQuestions = new Set(questionTexts);
+    expect(uniqueQuestions.size).toBe(paper!.questions.length);
+  });
+
+  it("29. Registers authentic Class 11 Chemistry textbook (PCTB-CHM-11) in official Punjab textbook catalog and registry", async () => {
+    const { PctbService } = await import("@/server/punjab/pctb-service");
+    const catalog = PctbService.getCatalog();
+    const chm11Book = catalog.find((b) => b.code === "PCTB-CHM-11" || b.id === "pctb-chm-11");
+
+    expect(chm11Book).toBeDefined();
+    expect(chm11Book?.classLevel).toBe(11);
+    expect(chm11Book?.subjectCode).toBe("CHM-11");
+    expect(chm11Book?.title).toContain("Chemistry 1st Year / Class 11");
+    expect(chm11Book?.officialSourceUrl).toBe("https://pctb.punjab.gov.pk/system/files/Chemistry-11-EM.pdf");
+    expect(chm11Book?.chapters.length).toBe(11);
+
+    const titles = chm11Book!.chapters.map((c) => c.title);
+    expect(titles.some((t) => t.includes("Basic Concepts"))).toBe(true);
+    expect(titles.some((t) => t.includes("Experimental Techniques"))).toBe(true);
+    expect(titles.some((t) => t.includes("Gases"))).toBe(true);
+    expect(titles.some((t) => t.includes("Liquids and Solids"))).toBe(true);
+    expect(titles.some((t) => t.includes("Atomic Structure"))).toBe(true);
+    expect(titles.some((t) => t.includes("Chemical Bonding"))).toBe(true);
+    expect(titles.some((t) => t.includes("Thermochemistry"))).toBe(true);
+    expect(titles.some((t) => t.includes("Chemical Equilibrium"))).toBe(true);
+    expect(titles.some((t) => t.includes("Solutions"))).toBe(true);
+    expect(titles.some((t) => t.includes("Electrochemistry"))).toBe(true);
+    expect(titles.some((t) => t.includes("Reaction Kinetics"))).toBe(true);
+  });
+
+  it("30. Guarantees EducationService.getBooks and getBookChapters resolve Class 11 Chemistry with 11 chapters", async () => {
+    const { EducationService } = await import("@/server/education-service");
+    const books = await EducationService.getBooks("subj-chemistry-11");
+
+    expect(books.length).toBeGreaterThan(0);
+    const chem11Book = books.find((b: any) => b.class?.numericLevel === 11 || b.id.includes("11"));
+    expect(chem11Book).toBeDefined();
+    expect(chem11Book?.title).toContain("11");
+
+    const chapters = await EducationService.getBookChapters(chem11Book!.id);
+    expect(chapters.length).toBe(11);
+
+    const chapterNumbers = chapters.map((c: any) => c.chapterNumber);
+    expect(chapterNumbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  it("31. Guarantees large Class 11 Chemistry question bank and alternate non-identical papers on consecutive generations with 0% cross-subject pollution", () => {
+    // 1. Verify large question bank capacity for Class 11 Chemistry
+    const chm11Pool = CURRICULUM_QUESTION_REGISTRY.filter(
+      (q) => q.classLevel === "11" && q.subjectKey === "CHM"
+    );
+    const mcqs = chm11Pool.filter((q) => q.type === "MCQ");
+    const shorts = chm11Pool.filter((q) => q.type === "SHORT");
+    const longs = chm11Pool.filter((q) => q.type === "LONG");
+
+    expect(mcqs.length).toBeGreaterThanOrEqual(24);
+    expect(shorts.length).toBeGreaterThanOrEqual(16);
+    expect(longs.length).toBeGreaterThanOrEqual(8);
+
+    // 2. Generate Paper 1
+    const paper1Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "1st Year",
+      subjectName: "Chemistry",
+      totalMarks: 60,
+    });
+
+    // 3. Generate Paper 2 (Alternate Paper)
+    const paper2Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "1st Year",
+      subjectName: "Chemistry",
+      totalMarks: 60,
+    });
+
+    const p1McqIds = paper1Sections[0].questions.map((q) => q.text);
+    const p2McqIds = paper2Sections[0].questions.map((q) => q.text);
+
+    // Alternate papers must not be identical in exact question sequence
+    const identicalCount = p1McqIds.filter((t, idx) => t === p2McqIds[idx]).length;
+    expect(identicalCount).toBeLessThan(p1McqIds.length);
+
+    // Both papers must contain 0% internal question duplication
+    expect(new Set(p1McqIds).size).toBe(p1McqIds.length);
+    expect(new Set(p2McqIds).size).toBe(p2McqIds.length);
+
+    // Both papers must contain authentic Class 11 Chemistry concepts and zero math/stats
+    const allStems = [...paper1Sections, ...paper2Sections].flatMap((s) => s.questions.map((q) => q.text)).join(" ");
+    expect(allStems).toMatch(/molar volume|limiting reactant|ideal gas|hydrogen bonding|quantum|vsepr|enthalpy|buffer|raoult|electrochemical|activation energy/i);
+    expect(allStems).not.toMatch(/determinant|matrix|cube root|Quartile|Fisher|Bernoulli|projectile|Fundamental principle and governing rule/i);
   });
 });

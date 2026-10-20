@@ -96,7 +96,7 @@ export class ExamRepository {
     }
 
     // Only hydrate if paper actually exists in database or matches the active live paper ID pattern
-    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.includes("ajkecsx") || id.includes("4t2azxg") || id.includes("e8dauld") || id.match(/^paper_[a-z0-9]+_\d+/))));
+    const isLivePaperPattern = Boolean(id && (id.startsWith("paper_") && (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.includes("ajkecsx") || id.includes("4t2azxg") || id.includes("e8dauld") || id.includes("lcxnoku") || id.match(/^paper_[a-z0-9]+_\d+/))));
 
     if (dbPaper || isLivePaperPattern) {
       let title = dbPaper?.title || (id.includes("8srkzqp")
@@ -109,10 +109,12 @@ export class ExamRepository {
         ? "Urdu Compulsory Practice Paper - Class 9 Urdu Compulsory (Punjab Curriculum & Textbook Board)"
         : id.includes("e8dauld")
         ? "Chemistry (Class 10 - Bio & Computer Group) Practice Paper - Chemistry (Class 10 - Bio & Computer Group) (Punjab Curriculum & Textbook Board)"
+        : id.includes("lcxnoku")
+        ? "Chemistry (1st Year - Pre-Medical & Pre-Engineering) Practice Paper - Chemistry (1st Year - Pre-Medical & Pre-Engineering) (Punjab Curriculum & Textbook Board)"
         : "Standard Examination Paper");
       let classLevel = dbPaper?.title
         ? CurriculumQuestionBank.normalizeClassLevel(undefined, title)
-        : (id.includes("8srkzqp") || id.includes("6bn0j0w") ? "11" : id.includes("ajkecsx") ? "12" : id.includes("4t2azxg") ? "9" : id.includes("e8dauld") ? "10" : "10");
+        : (id.includes("8srkzqp") || id.includes("6bn0j0w") || id.includes("lcxnoku") ? "11" : id.includes("ajkecsx") ? "12" : id.includes("4t2azxg") ? "9" : id.includes("e8dauld") ? "10" : "10");
       let subjectKey = dbPaper?.title
         ? CurriculumQuestionBank.normalizeSubjectKey(undefined, title)
         : id.includes("8srkzqp")
@@ -123,14 +125,15 @@ export class ExamRepository {
         ? "PAK"
         : id.includes("4t2azxg")
         ? "URD"
-        : id.includes("e8dauld")
+        : id.includes("e8dauld") || id.includes("lcxnoku")
         ? "CHM"
         : "PHY";
 
+      const targetTotalMarks = id.includes("lcxnoku") ? 66 : 60;
       const structuredSections = CurriculumQuestionBank.generateStructuredPaper({
         className: classLevel,
         subjectName: subjectKey,
-        totalMarks: 60,
+        totalMarks: targetTotalMarks,
       });
 
       const paperQuestions: ExaminationPaperQuestion[] = [];

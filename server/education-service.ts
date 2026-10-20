@@ -1533,9 +1533,13 @@ export class EducationService {
           },
         },
       });
-      if (book && book.chapters && book.chapters.length > 0) return book.chapters;
-
       const cleanBookId = bookId.toLowerCase();
+      if (book && book.chapters && book.chapters.length > 0) {
+        const isChm10 = (cleanBookId.includes("chm-10") || cleanBookId.includes("chemistry-10") || (book.class?.numericLevel === 10 && book.subject?.code?.includes("CHM")));
+        if (!(isChm10 && book.chapters[0]?.chapterNumber === 1)) {
+          return book.chapters;
+        }
+      }
       let targetClassLevel: number | undefined = book?.class?.numericLevel;
       if (!targetClassLevel && book?.title) {
         if (/\b(class\s*12|12th|grade\s*12)\b/i.test(book.title)) targetClassLevel = 12;
@@ -1553,12 +1557,18 @@ export class EducationService {
       const pctb = PCTB_OFFICIAL_CATALOG.find(
         (b) => {
           if (targetClassLevel && b.classLevel !== targetClassLevel) return false;
+          const subLower = b.subjectName.toLowerCase();
           return (
             b.id.toLowerCase() === cleanBookId ||
             cleanBookId.includes(b.id.toLowerCase()) ||
             cleanBookId.includes(b.subjectCode.toLowerCase()) ||
+            cleanBookId.includes(b.subjectCode.toLowerCase().replace(/[^a-z0-9]/g, "")) ||
+            cleanBookId.includes(subLower) ||
             cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
             cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("urd-", "urdu-")}` ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("chm-", "chemistry-")}` ||
+            cleanBookId === `book-${subLower}-${b.classLevel}` ||
+            cleanBookId === `book-pctb-${subLower}-${b.classLevel}` ||
             (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase()) ||
             (book?.title && book.title.toLowerCase().includes(b.subjectName.toLowerCase()))
           );
@@ -1633,12 +1643,29 @@ export class EducationService {
       })) as any;
     } catch {
       const cleanBookId = bookId.toLowerCase();
+      let targetClassLevel: number | undefined;
+      if (/\b12\b|[-_]12\b/.test(cleanBookId)) targetClassLevel = 12;
+      else if (/\b11\b|[-_]11\b/.test(cleanBookId)) targetClassLevel = 11;
+      else if (/\b10\b|[-_]10\b/.test(cleanBookId)) targetClassLevel = 10;
+      else if (/\b9\b|[-_]09\b|[-_]9\b/.test(cleanBookId)) targetClassLevel = 9;
+
       const pctb = PCTB_OFFICIAL_CATALOG.find(
-        (b) =>
-          b.id.toLowerCase() === cleanBookId ||
-          cleanBookId.includes(b.id.toLowerCase()) ||
-          cleanBookId.includes(b.subjectCode.toLowerCase()) ||
-          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}`
+        (b) => {
+          if (targetClassLevel && b.classLevel !== targetClassLevel) return false;
+          const subLower = b.subjectName.toLowerCase();
+          return (
+            b.id.toLowerCase() === cleanBookId ||
+            cleanBookId.includes(b.id.toLowerCase()) ||
+            cleanBookId.includes(b.subjectCode.toLowerCase()) ||
+            cleanBookId.includes(b.subjectCode.toLowerCase().replace(/[^a-z0-9]/g, "")) ||
+            cleanBookId.includes(subLower) ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("urd-", "urdu-")}` ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("chm-", "chemistry-")}` ||
+            cleanBookId === `book-${subLower}-${b.classLevel}` ||
+            cleanBookId === `book-pctb-${subLower}-${b.classLevel}`
+          );
+        }
       );
       if (pctb) {
         return pctb.chapters.map((ch) => ({
