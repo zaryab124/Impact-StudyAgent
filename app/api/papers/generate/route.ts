@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
       (q) => q.classLevel === normClass && q.subjectKey === normSub
     );
     if (bankPool.length === 0) {
-      bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === normSub);
+      bankPool = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.classLevel === normClass);
     }
 
     const usedQuestionIds = new Set<string>();
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
       const qIds: string[] = [];
       let candidateItems = bankPool.filter((q) => q.type === sc.questionType);
       if (candidateItems.length === 0) {
-        candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType && q.subjectKey === normSub);
+        candidateItems = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.type === sc.questionType && q.classLevel === normClass);
       }
       // Shuffle candidate items to guarantee alternate papers on consecutive requests
       const shuffledCandidates = [...candidateItems].sort(() => Math.random() - 0.5);

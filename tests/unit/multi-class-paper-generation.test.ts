@@ -603,7 +603,114 @@ describe("Multi-Class & Multi-Subject Unique Paper Generation Engine", () => {
     expect(chapterTitles.some((t: string) => t.includes("میدانِ کربلا میں گرمی کی شدت"))).toBe(true);
     expect(chapterTitles.some((t: string) => t.includes("فاطمہ بنتِ عبداللہ"))).toBe(true);
   });
+  it("24. Guarantees ExamRepository.findPaperById hydrates paper_e8dauld_1792455008814 with authentic Class 10 Chemistry and zero Class 9 or CS content", async () => {
+    const { ExamRepository } = await import("@/server/exam-engine/exam-repository");
+    const paper = await ExamRepository.findPaperById("paper_e8dauld_1792455008814");
+
+    expect(paper).not.toBeNull();
+    expect(paper?.title).toMatch(/Chemistry.*Class 10/i);
+
+    const questionTexts = paper!.questions.map((q) => q.questionText);
+    const combinedQuestions = questionTexts.join(" ");
+
+    // Verify authentic Class 10 Chemistry content (Chapters 9-16)
+    expect(combinedQuestions).toMatch(/Equilibrium|Kc|Bronsted|Lewis|pH|Catenation|Functional|Alkane|Alkenes|Baeyer|Carbohydrate|Protein|Peptide|Atmosphere|Greenhouse|Acid rain|Hardness|Solvay|Urea/i);
+
+    // Verify ZERO Class 9 Chemistry stems exist
+    expect(combinedQuestions).not.toMatch(/Branches of Chemistry|Bohr's Atomic Theory|Ionization Energy|Coordinate Covalent Bond|Gaseous State: Diffusion|Solute and Solvent|Oxidation Numbers|Non-Metals Reactivity|Avogadro's Number/i);
+
+    // Verify ZERO Computer Science stems exist
+    expect(combinedQuestions).not.toMatch(/flowchart|binary|topology|html|printf|database|normalization|c language/i);
+
+    // Verify zero duplicates
+    const uniqueQuestions = new Set(questionTexts);
+    expect(uniqueQuestions.size).toBe(paper!.questions.length);
+  });
+
+  it("25. Registers authentic Class 10 Chemistry textbook (PCTB-CHM-10) in official Punjab textbook catalog and registry", async () => {
+    const { PctbService } = await import("@/server/punjab/pctb-service");
+    const catalog = PctbService.getCatalog();
+    const chm10Book = catalog.find((b) => b.code === "PCTB-CHM-10" || b.id === "pctb-chm-10");
+
+    expect(chm10Book).toBeDefined();
+    expect(chm10Book?.classLevel).toBe(10);
+    expect(chm10Book?.subjectCode).toBe("CHM-10");
+    expect(chm10Book?.title).toContain("Chemistry Class 10");
+    expect(chm10Book?.officialSourceUrl).toBe("https://pctb.punjab.gov.pk/system/files/Chemistry-10-EM.pdf");
+    expect(chm10Book?.chapters.length).toBe(8);
+
+    // Verify all 8 chapters exist (Chapters 9 to 16)
+    const chapterNumbers = chm10Book!.chapters.map((c) => c.chapterNumber);
+    expect(chapterNumbers).toEqual([9, 10, 11, 12, 13, 14, 15, 16]);
+
+    const titles = chm10Book!.chapters.map((c) => c.title);
+    expect(titles.some((t) => t.includes("Chemical Equilibrium"))).toBe(true);
+    expect(titles.some((t) => t.includes("Acids, Bases and Salts"))).toBe(true);
+    expect(titles.some((t) => t.includes("Organic Chemistry"))).toBe(true);
+    expect(titles.some((t) => t.includes("Hydrocarbons"))).toBe(true);
+    expect(titles.some((t) => t.includes("Biochemistry"))).toBe(true);
+    expect(titles.some((t) => t.includes("Atmosphere"))).toBe(true);
+    expect(titles.some((t) => t.includes("Water"))).toBe(true);
+    expect(titles.some((t) => t.includes("Chemical Industries"))).toBe(true);
+  });
+
+  it("26. Guarantees EducationService.getBooks and getBookChapters resolve Class 10 Chemistry without Class 9 pollution", async () => {
+    const { EducationService } = await import("@/server/education-service");
+    const books = await EducationService.getBooks("subj-chemistry-10");
+
+    expect(books.length).toBeGreaterThan(0);
+    const chem10Book = books.find((b: any) => b.class?.numericLevel === 10 || b.id.includes("10"));
+    expect(chem10Book).toBeDefined();
+    expect(chem10Book?.title).toContain("10");
+
+    const chapters = await EducationService.getBookChapters(chem10Book!.id);
+    expect(chapters.length).toBe(8);
+
+    const chapterNumbers = chapters.map((c: any) => c.chapterNumber);
+    expect(chapterNumbers).toEqual([9, 10, 11, 12, 13, 14, 15, 16]);
+  });
+
+  it("27. Guarantees large Class 10 Chemistry question bank and alternate non-identical papers on consecutive generations", () => {
+    // 1. Verify large question bank capacity for Class 10 Chemistry
+    const chm10Pool = CURRICULUM_QUESTION_REGISTRY.filter(
+      (q) => q.classLevel === "10" && q.subjectKey === "CHM"
+    );
+    const mcqs = chm10Pool.filter((q) => q.type === "MCQ");
+    const shorts = chm10Pool.filter((q) => q.type === "SHORT");
+    const longs = chm10Pool.filter((q) => q.type === "LONG");
+
+    expect(mcqs.length).toBeGreaterThanOrEqual(24);
+    expect(shorts.length).toBeGreaterThanOrEqual(16);
+    expect(longs.length).toBeGreaterThanOrEqual(8);
+
+    // 2. Generate Paper 1
+    const paper1Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "Class 10",
+      subjectName: "Chemistry",
+      totalMarks: 60,
+    });
+
+    // 3. Generate Paper 2 (Alternate Paper)
+    const paper2Sections = CurriculumQuestionBank.generateStructuredPaper({
+      className: "Class 10",
+      subjectName: "Chemistry",
+      totalMarks: 60,
+    });
+
+    const p1McqIds = paper1Sections[0].questions.map((q) => q.text);
+    const p2McqIds = paper2Sections[0].questions.map((q) => q.text);
+
+    // Alternate papers must not be identical in exact question sequence
+    const identicalCount = p1McqIds.filter((t, idx) => t === p2McqIds[idx]).length;
+    expect(identicalCount).toBeLessThan(p1McqIds.length);
+
+    // Both papers must contain 0% internal question duplication
+    expect(new Set(p1McqIds).size).toBe(p1McqIds.length);
+    expect(new Set(p2McqIds).size).toBe(p2McqIds.length);
+
+    // Both papers must contain authentic Class 10 Chemistry concepts
+    const allStems = [...paper1Sections, ...paper2Sections].flatMap((s) => s.questions.map((q) => q.text)).join(" ");
+    expect(allStems).toMatch(/Equilibrium|Kc|Bronsted|Lewis|pH|Catenation|Baeyer|Carbohydrate|Peptide|Atmosphere|Hardness|Solvay|Urea/i);
+    expect(allStems).not.toMatch(/Branches of Chemistry|Bohr's Atomic Theory|Fundamental principle and governing rule/i);
+  });
 });
-
-
-

@@ -186,7 +186,7 @@ export class LivePaperGenerator {
         (q) => q.classLevel === normClass && q.subjectKey === normSub
       );
       if (subQuestions.length === 0) {
-        subQuestions = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.subjectKey === normSub);
+        subQuestions = CURRICULUM_QUESTION_REGISTRY.filter((q) => q.classLevel === normClass);
       }
 
       for (const sec of sections) {
@@ -334,7 +334,7 @@ export class LivePaperGenerator {
         );
         if (bankItems.length === 0) {
           bankItems = CURRICULUM_QUESTION_REGISTRY.filter(
-            (q) => q.type === slot.questionType && q.subjectKey === normSub
+            (q) => q.type === slot.questionType && q.classLevel === normClass
           );
         }
 

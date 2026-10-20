@@ -69,6 +69,36 @@ const DEFAULT_CHAPTERS = [
         status: "ACTIVE",
       })),
     })),
+    ...pctb.chapters.map((ch) => ({
+      id: `chap-book-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}-${ch.chapterNumber}`,
+      bookId: `book-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}`,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: "ACTIVE",
+      topics: ch.topics.map((t) => ({
+        id: `top-book-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}-${ch.chapterNumber}-${t.orderIndex}`,
+        title: t.title,
+        topicCode: t.topicCode,
+        orderIndex: t.orderIndex,
+        status: "ACTIVE",
+      })),
+    })),
+    ...pctb.chapters.map((ch) => ({
+      id: `chap-book-pctb-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}-${ch.chapterNumber}`,
+      bookId: `book-pctb-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}`,
+      chapterNumber: ch.chapterNumber,
+      title: ch.title,
+      orderIndex: ch.orderIndex,
+      status: "ACTIVE",
+      topics: ch.topics.map((t) => ({
+        id: `top-book-pctb-${pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "")}-${pctb.classLevel}-${ch.chapterNumber}-${t.orderIndex}`,
+        title: t.title,
+        topicCode: t.topicCode,
+        orderIndex: t.orderIndex,
+        status: "ACTIVE",
+      })),
+    })),
     ...(pctb.subjectCode.toLowerCase().startsWith("urd")
       ? pctb.chapters.map((ch) => ({
           id: `chap-book-pctb-urdu-${pctb.classLevel}-${ch.chapterNumber}`,
@@ -574,6 +604,134 @@ const DEFAULT_BOOKS = [
       },
     ];
 
+    const subLower = pctb.subjectName.toLowerCase().replace(/[^a-z]/g, "");
+    variants.push({
+      ...baseBook,
+      id: `book-pctb-${subLower}-${pctb.classLevel}`,
+      subjectId: `subj-${subLower}-${pctb.classLevel}`,
+    });
+    variants.push({
+      ...baseBook,
+      id: `book-${subLower}-${pctb.classLevel}`,
+      subjectId: `subj-${subLower}-${pctb.classLevel}`,
+    });
+    if (subLower === "chemistry") {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-chem-${pctb.classLevel}`,
+        subjectId: `subj-chem-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-chem-${pctb.classLevel}`,
+        subjectId: `subj-chem-${pctb.classLevel}`,
+      });
+      if (pctb.classLevel === 10) {
+        variants.push({
+          ...baseBook,
+          id: "book-pctb-chm-10",
+          subjectId: "subj-chemistry-10",
+        });
+        variants.push({
+          ...baseBook,
+          id: "pctb-chm-10",
+          subjectId: "subj-chemistry-10",
+        });
+      }
+    } else if (subLower === "physics") {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-phy-${pctb.classLevel}`,
+        subjectId: `subj-phy-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-phy-${pctb.classLevel}`,
+        subjectId: `subj-phy-${pctb.classLevel}`,
+      });
+      if (pctb.classLevel === 10) {
+        variants.push({
+          ...baseBook,
+          id: "book-pctb-phy-10",
+          subjectId: "subj-physics-10",
+        });
+        variants.push({
+          ...baseBook,
+          id: "pctb-phy-10",
+          subjectId: "subj-physics-10",
+        });
+      }
+    } else if (subLower === "mathematics") {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-math-${pctb.classLevel}`,
+        subjectId: `subj-math-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-math-${pctb.classLevel}`,
+        subjectId: `subj-math-${pctb.classLevel}`,
+      });
+      if (pctb.classLevel === 10) {
+        variants.push({
+          ...baseBook,
+          id: "book-pctb-mth-10",
+          subjectId: "subj-math-10",
+        });
+        variants.push({
+          ...baseBook,
+          id: "pctb-mth-10",
+          subjectId: "subj-math-10",
+        });
+      }
+    } else if (subLower === "biology") {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-bio-${pctb.classLevel}`,
+        subjectId: `subj-bio-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-bio-${pctb.classLevel}`,
+        subjectId: `subj-bio-${pctb.classLevel}`,
+      });
+      if (pctb.classLevel === 10) {
+        variants.push({
+          ...baseBook,
+          id: "book-pctb-bio-10",
+          subjectId: "subj-biology-10",
+        });
+        variants.push({
+          ...baseBook,
+          id: "pctb-bio-10",
+          subjectId: "subj-biology-10",
+        });
+      }
+    } else if (subLower === "pakistanstudies") {
+      variants.push({
+        ...baseBook,
+        id: `book-pctb-pakstudies-${pctb.classLevel}`,
+        subjectId: `subj-pakstudies-${pctb.classLevel}`,
+      });
+      variants.push({
+        ...baseBook,
+        id: `book-pakstudies-${pctb.classLevel}`,
+        subjectId: `subj-pakstudies-${pctb.classLevel}`,
+      });
+      if (pctb.classLevel === 10) {
+        variants.push({
+          ...baseBook,
+          id: "book-pctb-pak-10",
+          subjectId: "subj-pakstudies-10",
+        });
+        variants.push({
+          ...baseBook,
+          id: "pctb-pak-10",
+          subjectId: "subj-pakstudies-10",
+        });
+      }
+    }
+
     if (pctb.subjectCode.toLowerCase().startsWith("urd")) {
       variants.push({
         ...baseBook,
@@ -969,27 +1127,6 @@ export class EducationService {
 
   public static async getBooks(subjectId?: string) {
     try {
-      let res = await prisma.book.findMany({
-        where: subjectId
-          ? {
-              OR: [
-                { subjectId },
-                { id: subjectId },
-                { id: `book-pctb-${subjectId.toLowerCase()}` },
-              ],
-            }
-          : undefined,
-        orderBy: [{ title: "asc" }, { version: "desc" }],
-        include: {
-          subject: { select: { id: true, name: true, code: true } },
-          class: { select: { id: true, name: true, numericLevel: true } },
-          board: { select: { id: true, name: true, code: true } },
-          academicYear: { select: { id: true, name: true, code: true } },
-          _count: { select: { chapters: true } },
-        },
-      });
-      if (res && res.length > 0) return res;
-
       // Identify subject details if subjectId is provided
       let subj = DEFAULT_SUBJECTS.find(
         (s) => s.id === subjectId || s.code.toLowerCase() === subjectId?.toLowerCase()
@@ -1012,18 +1149,86 @@ export class EducationService {
         }
       }
 
+      // Determine targetClassLevel accurately
+      let targetClassLevel: number | undefined = subj?.class?.numericLevel;
+      if (!targetClassLevel && subj?.classId) {
+        if (subj.classId.includes("12")) targetClassLevel = 12;
+        else if (subj.classId.includes("11")) targetClassLevel = 11;
+        else if (subj.classId.includes("10")) targetClassLevel = 10;
+        else if (subj.classId.includes("9")) targetClassLevel = 9;
+      }
+      if (!targetClassLevel && subjectId) {
+        const sid = subjectId.toLowerCase();
+        if (/\b12\b|[-_]12\b/.test(sid)) targetClassLevel = 12;
+        else if (/\b11\b|[-_]11\b/.test(sid)) targetClassLevel = 11;
+        else if (/\b10\b|[-_]10\b/.test(sid)) targetClassLevel = 10;
+        else if (/\b9\b|[-_]09\b|[-_]9\b/.test(sid)) targetClassLevel = 9;
+      }
+
+      let res = await prisma.book.findMany({
+        where: subjectId
+          ? {
+              OR: [
+                { subjectId },
+                { id: subjectId },
+                { id: `book-pctb-${subjectId.toLowerCase()}` },
+              ],
+            }
+          : undefined,
+        orderBy: [{ title: "asc" }, { version: "desc" }],
+        include: {
+          subject: { select: { id: true, name: true, code: true } },
+          class: { select: { id: true, name: true, numericLevel: true } },
+          board: { select: { id: true, name: true, code: true } },
+          academicYear: { select: { id: true, name: true, code: true } },
+          _count: { select: { chapters: true } },
+        },
+      });
+
+      if (res && res.length > 0) {
+        if (targetClassLevel) {
+          const classMatches = res.filter((b) => b.class?.numericLevel === targetClassLevel || b.id.includes(String(targetClassLevel)));
+          if (classMatches.length > 0) return classMatches;
+        } else {
+          return res;
+        }
+      }
+
       if (subjectId) {
         // Find matching book in PCTB Official Catalog first
         const subjCode = subj?.code || subjectId;
         const subjName = subj?.name || "";
-        const pctb = PCTB_OFFICIAL_CATALOG.find((b) =>
-          b.id.toLowerCase() === subjectId.toLowerCase() ||
-          b.subjectCode.toLowerCase() === subjCode.toLowerCase() ||
-          subjCode.toLowerCase().includes(b.subjectCode.toLowerCase()) ||
-          b.subjectCode.toLowerCase().includes(subjCode.toLowerCase()) ||
-          (subjName && b.subjectName.toLowerCase().includes(subjName.toLowerCase())) ||
-          (subjName && subjName.toLowerCase().includes(b.subjectName.toLowerCase()))
-        );
+
+        let pctb = PCTB_OFFICIAL_CATALOG.find((b) => {
+          if (targetClassLevel && b.classLevel !== targetClassLevel) return false;
+          return (
+            b.id.toLowerCase() === subjectId.toLowerCase() ||
+            b.subjectCode.toLowerCase() === subjCode.toLowerCase() ||
+            subjCode.toLowerCase().includes(b.subjectCode.toLowerCase()) ||
+            b.subjectCode.toLowerCase().includes(subjCode.toLowerCase()) ||
+            (subjName && b.subjectName.toLowerCase().includes(subjName.toLowerCase())) ||
+            (subjName && subjName.toLowerCase().includes(b.subjectName.toLowerCase()))
+          );
+        });
+
+        if (!pctb && targetClassLevel) {
+          const cleanSub = subjCode.toLowerCase().replace(/[^a-z]/g, "");
+          pctb = PCTB_OFFICIAL_CATALOG.find(
+            (b) => b.classLevel === targetClassLevel && (
+              b.subjectName.toLowerCase().includes(cleanSub) ||
+              cleanSub.includes(b.subjectName.toLowerCase()) ||
+              b.subjectCode.toLowerCase().includes(cleanSub) ||
+              cleanSub.includes(b.subjectCode.toLowerCase())
+            )
+          );
+        }
+
+        if (!pctb && !targetClassLevel) {
+          pctb = PCTB_OFFICIAL_CATALOG.find((b) =>
+            b.id.toLowerCase() === subjectId.toLowerCase() ||
+            b.subjectCode.toLowerCase() === subjCode.toLowerCase()
+          );
+        }
 
         if (pctb) {
           const classIdStr =
@@ -1226,13 +1431,25 @@ export class EducationService {
       if (book && book.chapters && book.chapters.length > 0) return book;
 
       const cleanId = id.toLowerCase();
+      let targetClassLevel: number | undefined = (book as any)?.class?.numericLevel;
+      if (!targetClassLevel) {
+        if (/\b12\b|[-_]12\b/.test(cleanId)) targetClassLevel = 12;
+        else if (/\b11\b|[-_]11\b/.test(cleanId)) targetClassLevel = 11;
+        else if (/\b10\b|[-_]10\b/.test(cleanId)) targetClassLevel = 10;
+        else if (/\b9\b|[-_]09\b|[-_]9\b/.test(cleanId)) targetClassLevel = 9;
+      }
+
       const pctb = PCTB_OFFICIAL_CATALOG.find(
-        (b) =>
-          b.id.toLowerCase() === cleanId ||
-          cleanId.includes(b.id.toLowerCase()) ||
-          cleanId.includes(b.subjectCode.toLowerCase()) ||
-          cleanId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
-          (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase())
+        (b) => {
+          if (targetClassLevel && b.classLevel !== targetClassLevel) return false;
+          return (
+            b.id.toLowerCase() === cleanId ||
+            cleanId.includes(b.id.toLowerCase()) ||
+            cleanId.includes(b.subjectCode.toLowerCase()) ||
+            cleanId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
+            (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase())
+          );
+        }
       );
 
       if (pctb) {
@@ -1305,6 +1522,7 @@ export class EducationService {
         where: { id: bookId },
         include: {
           subject: true,
+          class: true,
           chapters: {
             orderBy: { orderIndex: "asc" },
             include: {
@@ -1318,15 +1536,33 @@ export class EducationService {
       if (book && book.chapters && book.chapters.length > 0) return book.chapters;
 
       const cleanBookId = bookId.toLowerCase();
+      let targetClassLevel: number | undefined = book?.class?.numericLevel;
+      if (!targetClassLevel && book?.title) {
+        if (/\b(class\s*12|12th|grade\s*12)\b/i.test(book.title)) targetClassLevel = 12;
+        else if (/\b(class\s*11|11th|grade\s*11)\b/i.test(book.title)) targetClassLevel = 11;
+        else if (/\b(class\s*10|10th|grade\s*10)\b/i.test(book.title)) targetClassLevel = 10;
+        else if (/\b(class\s*9|9th|grade\s*9)\b/i.test(book.title)) targetClassLevel = 9;
+      }
+      if (!targetClassLevel) {
+        if (/\b12\b|[-_]12\b/.test(cleanBookId)) targetClassLevel = 12;
+        else if (/\b11\b|[-_]11\b/.test(cleanBookId)) targetClassLevel = 11;
+        else if (/\b10\b|[-_]10\b/.test(cleanBookId)) targetClassLevel = 10;
+        else if (/\b9\b|[-_]09\b|[-_]9\b/.test(cleanBookId)) targetClassLevel = 9;
+      }
+
       const pctb = PCTB_OFFICIAL_CATALOG.find(
-        (b) =>
-          b.id.toLowerCase() === cleanBookId ||
-          cleanBookId.includes(b.id.toLowerCase()) ||
-          cleanBookId.includes(b.subjectCode.toLowerCase()) ||
-          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
-          cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("urd-", "urdu-")}` ||
-          (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase()) ||
-          (book?.title && book.title.toLowerCase().includes(b.subjectName.toLowerCase()))
+        (b) => {
+          if (targetClassLevel && b.classLevel !== targetClassLevel) return false;
+          return (
+            b.id.toLowerCase() === cleanBookId ||
+            cleanBookId.includes(b.id.toLowerCase()) ||
+            cleanBookId.includes(b.subjectCode.toLowerCase()) ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase()}` ||
+            cleanBookId === `book-pctb-${b.subjectCode.toLowerCase().replace("urd-", "urdu-")}` ||
+            (book?.subject?.code && b.subjectCode.toLowerCase() === book.subject.code.toLowerCase()) ||
+            (book?.title && book.title.toLowerCase().includes(b.subjectName.toLowerCase()))
+          );
+        }
       );
 
       if (pctb) {
